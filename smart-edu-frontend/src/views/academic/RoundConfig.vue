@@ -30,17 +30,52 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑轮次' : '新建轮次'" width="500px">
-      <el-form :model="form" label-width="100px">
-        <el-form-item label="轮次名称"><el-input v-model="form.roundName" /></el-form-item>
-        <el-form-item label="学期"><el-input v-model="form.semester" placeholder="如 2024-2025-1" /></el-form-item>
-        <el-form-item label="开始时间"><el-date-picker v-model="form.startTime" type="datetime" /></el-form-item>
-        <el-form-item label="结束时间"><el-date-picker v-model="form.endTime" type="datetime" /></el-form-item>
-        <el-form-item label="最大学分"><el-input-number v-model="form.maxCredits" :min="1" :max="50" /></el-form-item>
-        <el-form-item label="最大门数"><el-input-number v-model="form.maxCourses" :min="1" :max="20" /></el-form-item>
-        <el-form-item label="目标年级"><el-input v-model="form.targetGradesStr" placeholder="逗号分隔，如: 2024级,2023级" /></el-form-item>
-        <el-form-item label="年龄下限"><el-input-number v-model="form.ageMin" :min="0" :max="99" /></el-form-item>
-        <el-form-item label="年龄上限"><el-input-number v-model="form.ageMax" :min="0" :max="99" /></el-form-item>
+    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑轮次' : '新建轮次'" width="640px" class="round-dialog" append-to-body>
+      <el-form :model="form" label-position="top" class="round-form">
+        <div class="form-section">
+          <div class="section-title">基础信息</div>
+          <div class="form-grid">
+            <el-form-item label="轮次名称" class="span-2">
+              <el-input v-model="form.roundName" placeholder="例如：2024-2025-1 第一轮选课" />
+            </el-form-item>
+            <el-form-item label="学期">
+              <el-input v-model="form.semester" placeholder="如 2024-2025-1" />
+            </el-form-item>
+            <el-form-item label="目标年级">
+              <el-input v-model="form.targetGradesStr" placeholder="逗号分隔，如：2024级,2023级" />
+            </el-form-item>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-title">开放时间</div>
+          <div class="form-grid">
+            <el-form-item label="开始时间">
+              <el-date-picker v-model="form.startTime" type="datetime" placeholder="选择开始时间" />
+            </el-form-item>
+            <el-form-item label="结束时间">
+              <el-date-picker v-model="form.endTime" type="datetime" placeholder="选择结束时间" />
+            </el-form-item>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-title">选课限制</div>
+          <div class="form-grid">
+            <el-form-item label="最大学分">
+              <el-input-number v-model="form.maxCredits" :min="1" :max="50" />
+            </el-form-item>
+            <el-form-item label="最大门数">
+              <el-input-number v-model="form.maxCourses" :min="1" :max="20" />
+            </el-form-item>
+            <el-form-item label="年龄下限">
+              <el-input-number v-model="form.ageMin" :min="0" :max="99" />
+            </el-form-item>
+            <el-form-item label="年龄上限">
+              <el-input-number v-model="form.ageMax" :min="0" :max="99" />
+            </el-form-item>
+          </div>
+        </div>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -117,4 +152,62 @@ onMounted(fetchRounds)
 </script>
 
 <style lang="scss" scoped>
+.round-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-section {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(79, 70, 229, 0.1);
+  border-radius: 10px;
+}
+
+html.dark .form-section {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(139, 92, 246, 0.14);
+}
+
+.section-title {
+  margin-bottom: 14px;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+}
+
+.span-2 {
+  grid-column: span 2;
+}
+
+.round-form :deep(.el-form-item) {
+  margin-bottom: 0;
+}
+
+.round-form :deep(.el-form-item__label) {
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.round-form :deep(.el-input-number .el-input__wrapper) {
+  padding-left: 42px;
+  padding-right: 42px;
+}
+
+@media (max-width: 640px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .span-2 {
+    grid-column: span 1;
+  }
+}
 </style>

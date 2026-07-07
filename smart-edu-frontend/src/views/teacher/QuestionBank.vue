@@ -52,7 +52,7 @@
     </div>
 
     <!-- 新增/编辑弹窗 -->
-    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑试题' : '新增试题'" width="600px">
+    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑试题' : '新增试题'" width="600px" append-to-body>
       <el-form :model="form" label-width="80px">
         <el-form-item label="题型">
           <el-radio-group v-model="form.questionType">

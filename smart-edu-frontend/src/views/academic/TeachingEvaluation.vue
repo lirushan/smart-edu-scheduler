@@ -19,7 +19,7 @@
     </GlassCard>
 
     <!-- 评价详情弹窗 -->
-    <el-dialog v-model="detailVisible" :title="'评价详情 — ' + selectedTeacher" width="700px">
+    <el-dialog v-model="detailVisible" :title="'评价详情 — ' + selectedTeacher" width="700px" append-to-body>
       <el-table :data="details" stripe max-height="400">
         <el-table-column prop="studentName" label="学生" width="100" />
         <el-table-column prop="courseName" label="课程" width="140" />

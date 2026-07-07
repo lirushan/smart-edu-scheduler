@@ -68,7 +68,7 @@ const routes: RouteRecordRaw[] = [
 
       // ===== 学生端 =====
       { path: 'courses', name: 'CourseMarket', component: CourseMarket, meta: { title: '课程广场', role: 'student' } },
-      { path: 'schedule', name: 'MySchedule', component: MySchedule, meta: { title: '我的课表', role: 'student' } },
+      { path: 'schedule', name: 'MySchedule', component: MySchedule, meta: { title: '我的课表', role: 'student,teacher' } },
       { path: 'enrollments', name: 'MyEnrollments', component: MyEnrollments, meta: { title: '我的选课', role: 'student' } },
       { path: 'scores', name: 'MyScores', component: MyScores, meta: { title: '我的成绩', role: 'student' } },
       { path: 'exams', name: 'ExamCenter', component: ExamCenter, meta: { title: '考试中心', role: 'student' } },

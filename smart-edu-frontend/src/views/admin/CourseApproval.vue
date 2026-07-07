@@ -28,7 +28,7 @@
     </div>
 
     <!-- 驳回弹窗 -->
-    <el-dialog v-model="rejectVisible" title="驳回课程" width="400px">
+    <el-dialog v-model="rejectVisible" title="驳回课程" width="400px" append-to-body>
       <el-input v-model="rejectComment" type="textarea" :rows="3" placeholder="请输入驳回理由..." />
       <template #footer>
         <el-button @click="rejectVisible = false">取消</el-button>

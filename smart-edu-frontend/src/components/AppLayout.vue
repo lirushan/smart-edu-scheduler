@@ -16,16 +16,16 @@
       </div>
 
       <nav class="sidebar-nav">
-        <template v-for="item in menuItems" :key="item.section || item.path">
+        <template v-for="item in menuItems" :key="item.section || item.path || item.label">
           <div v-if="item.section" class="nav-section">{{ item.section }}</div>
           <router-link
             v-else
             :to="item.path || '/'"
             class="nav-item"
             :class="{ active: isActive(item.path || '') }"
+            @click="sidebarOpen = false"
           >
-            <span class="nav-icon" v-html="item.iconSvg || ''"></span>
-            <el-icon v-if="!item.iconSvg && item.iconComp" :size="18">
+            <el-icon v-if="item.iconComp" :size="18">
               <component :is="item.iconComp" />
             </el-icon>
             <span class="nav-label">{{ item.label }}</span>
@@ -92,14 +92,14 @@ import {
   Document, Upload, Checked, Collection, Timer, Expand, Close
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
+import { menuApi } from '@/api'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const isDark = ref(false)
 const sidebarOpen = ref(false)
-
-const activeMenu = computed(() => route.path)
+const backendMenus = ref<MenuTreeNode[]>([])
 
 const roleText = computed(() => {
   const map: Record<string, string> = { student: '学生', teacher: '教师', academic: '教务', admin: '管理员', qb_admin: '题库管理员' }
@@ -111,16 +111,28 @@ type MenuEntry = {
   path?: string
   label?: string
   iconComp?: any
-  iconSvg?: string
+}
+
+type MenuTreeNode = {
+  id: number
+  menuName: string
+  path?: string
+  icon?: string
+  menuType?: string
+  children?: MenuTreeNode[]
+}
+
+const iconMap: Record<string, any> = {
+  Monitor, Reading, Calendar, List, DataLine, Notebook, UserFilled, Setting,
+  Clock, View, Star, Document, Upload, Checked, Collection, Timer
 }
 
 const menuItems = computed<MenuEntry[]>(() => {
-  const role = userStore.role
-  const iconMap: Record<string, any> = {
-    Monitor, Reading, Calendar, List, DataLine, Notebook, UserFilled, Setting,
-    Clock, View, Star, Document, Upload, Checked, Collection, Timer
+  if (backendMenus.value.length > 0) {
+    return flattenBackendMenus(backendMenus.value)
   }
 
+  const role = userStore.role
   const makeItem = (path: string, label: string, icon: any): MenuEntry => ({
     path, label, iconComp: icon
   })
@@ -179,6 +191,40 @@ const menuItems = computed<MenuEntry[]>(() => {
   return []
 })
 
+function flattenBackendMenus(menus: MenuTreeNode[]): MenuEntry[] {
+  const result: MenuEntry[] = []
+
+  menus.forEach((menu) => {
+    const children = menu.children || []
+    const hasPath = Boolean(menu.path)
+    const iconComp = iconMap[menu.icon || ''] || Monitor
+
+    if (!hasPath && children.length > 0) {
+      result.push({ section: menu.menuName })
+      children.forEach((child) => {
+        if (child.path) {
+          result.push({
+            path: child.path,
+            label: child.menuName,
+            iconComp: iconMap[child.icon || ''] || iconComp,
+          })
+        }
+      })
+      return
+    }
+
+    if (hasPath) {
+      result.push({
+        path: menu.path,
+        label: menu.menuName,
+        iconComp,
+      })
+    }
+  })
+
+  return result
+}
+
 function isActive(path: string) {
   if (path === '/dashboard' || path === '/teacher' || path === '/admin' || path === '/academic' || path === '/qb-admin') {
     return route.path === path
@@ -207,13 +253,22 @@ async function handleLogout() {
   router.push('/login')
 }
 
-onMounted(() => {
+async function fetchMenus() {
+  try {
+    backendMenus.value = await menuApi.myMenus()
+  } catch {
+    backendMenus.value = []
+  }
+}
+
+onMounted(async () => {
   updateTime()
   timer = setInterval(updateTime, 30000)
   const savedTheme = localStorage.getItem('theme')
   isDark.value = savedTheme === 'dark'
   document.documentElement.classList.toggle('dark', isDark.value)
   document.documentElement.classList.toggle('light', !isDark.value)
+  await fetchMenus()
 })
 
 onUnmounted(() => clearInterval(timer))
@@ -430,6 +485,5 @@ onUnmounted(() => clearInterval(timer))
   }
 }
 </style>
-
 
 

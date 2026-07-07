@@ -45,8 +45,10 @@
         </el-table-column>
         <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" @click.stop="openEditDialog(row)">编辑</el-button>
-            <el-button link type="primary" @click.stop="selectRole(row)">权限</el-button>
+            <div class="row-actions">
+              <el-button size="small" :icon="EditPen" @click.stop="openEditDialog(row)">编辑</el-button>
+              <el-button size="small" type="primary" plain :icon="Setting" @click.stop="selectRole(row)">授权</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -83,6 +85,7 @@
           :props="treeProps"
           :check-strictly="false"
           class="menu-tree"
+          @check="syncCheckedMenuCount"
         >
           <template #default="{ data }">
             <div class="tree-node">
@@ -94,8 +97,9 @@
         </el-tree>
 
         <div class="permission-actions">
+          <span class="permission-summary">已选 {{ checkedMenuCount }} 项菜单</span>
           <el-button :icon="Refresh" @click="loadRoleDetail(selectedRole.id)">重置</el-button>
-          <el-button type="primary" :icon="Check" :loading="saving" @click="saveMenus">保存权限</el-button>
+          <el-button type="primary" :icon="Check" :loading="saving" @click="saveMenus">保存授权</el-button>
         </div>
       </div>
     </section>
@@ -105,6 +109,7 @@
       v-model="dialogVisible"
       :title="dialogMode === 'create' ? '新增角色' : '编辑角色'"
       width="480px"
+      append-to-body
       :close-on-click-modal="false"
       destroy-on-close
     >
@@ -149,6 +154,7 @@ import {
   Collection,
   DataLine,
   Document,
+  EditPen,
   Files,
   List,
   Menu as MenuIcon,
@@ -217,6 +223,13 @@ const roles = ref<RoleItem[]>([])
 const selectedRole = ref<RoleItem | null>(null)
 const menuTree = ref<MenuNode[]>([])
 const treeRef = ref()
+const checkedMenuCount = ref(0)
+
+function syncCheckedMenuCount() {
+  const checked = treeRef.value?.getCheckedKeys?.(false) || []
+  const halfChecked = treeRef.value?.getHalfCheckedKeys?.() || []
+  checkedMenuCount.value = new Set([...checked, ...halfChecked]).size
+}
 
 // ---- 新增/编辑角色弹窗 ----
 const dialogVisible = ref(false)
@@ -329,8 +342,12 @@ async function loadRoleDetail(id: number) {
   detailLoading.value = true
   try {
     const data = await roleApi.detail(id)
+    detailLoading.value = false
     await nextTick()
     treeRef.value?.setCheckedKeys(data.menuIds || [], false)
+    syncCheckedMenuCount()
+  } catch {
+    checkedMenuCount.value = 0
   } finally {
     detailLoading.value = false
   }
@@ -375,6 +392,7 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.75fr);
   gap: 18px;
+  align-items: start;
 }
 
 .page-heading {
@@ -428,6 +446,12 @@ onMounted(async () => {
   flex: 1;
 }
 
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .role-name {
   display: flex;
   flex-direction: column;
@@ -445,17 +469,25 @@ onMounted(async () => {
 }
 
 .permission-panel {
+  position: sticky;
+  top: 84px;
   min-height: 520px;
+  max-height: calc(100vh - 112px);
+  display: flex;
+  flex-direction: column;
 }
 
 .permission-content {
   display: flex;
   flex-direction: column;
-  min-height: 420px;
+  min-height: 0;
+  flex: 1;
 }
 
 .menu-tree {
   flex: 1;
+  min-height: 280px;
+  overflow: auto;
   padding: 10px;
   background: rgba(255, 255, 255, 0.34);
   border: 1px solid var(--color-border);
@@ -493,15 +525,35 @@ html.dark .menu-tree {
 }
 
 .permission-actions {
+  position: sticky;
+  bottom: 0;
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 16px;
+  margin: 16px -2px 0;
+  padding: 12px 2px 2px;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.84) 28%, rgba(255, 255, 255, 0.92));
+}
+
+html.dark .permission-actions {
+  background: linear-gradient(180deg, transparent, rgba(20, 18, 45, 0.88) 28%, rgba(20, 18, 45, 0.94));
+}
+
+.permission-summary {
+  margin-right: auto;
+  color: var(--color-text-muted);
+  font-size: 12px;
 }
 
 @media (max-width: 1120px) {
   .role-management {
     grid-template-columns: 1fr;
+  }
+
+  .permission-panel {
+    position: static;
+    max-height: none;
   }
 }
 </style>

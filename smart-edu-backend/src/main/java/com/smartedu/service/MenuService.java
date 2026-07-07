@@ -33,13 +33,13 @@ public class MenuService {
                 .collect(Collectors.groupingBy(m -> m.getParentId() != null ? m.getParentId() : 0L));
 
         List<MenuTreeNode> tree = new ArrayList<>();
-        List<SysMenu> roots = parentMap.getOrDefault(0L, List.of());
-        roots.sort(Comparator.comparing(SysMenu::getSortOrder));
+        List<SysMenu> roots = new ArrayList<>(parentMap.getOrDefault(0L, List.of()));
+        roots.sort(Comparator.comparing(SysMenu::getSortOrder, Comparator.nullsLast(Integer::compareTo)));
 
         for (SysMenu root : roots) {
             MenuTreeNode node = convert(root);
-            List<SysMenu> children = parentMap.getOrDefault(root.getId(), List.of());
-            children.sort(Comparator.comparing(SysMenu::getSortOrder));
+            List<SysMenu> children = new ArrayList<>(parentMap.getOrDefault(root.getId(), List.of()));
+            children.sort(Comparator.comparing(SysMenu::getSortOrder, Comparator.nullsLast(Integer::compareTo)));
             if (!children.isEmpty()) {
                 node.setChildren(children.stream().map(this::convert).collect(Collectors.toList()));
             }

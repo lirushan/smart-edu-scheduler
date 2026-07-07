@@ -1,6 +1,6 @@
 <template>
   <div class="login-page">
-    <div class="login-card page-card gradient-border-top">
+    <div class="login-card">
       <div class="login-logo">
         <div class="logo-icon icon-3d-clay icon-3d-purple icon-3d-lg">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -37,7 +37,8 @@
       </el-form>
 
       <div class="login-footer">
-        <p class="demo-hint">种子账号: admin / teacher01 / student01 / academic01 / qbadmin01</p>
+        <p class="demo-hint">选择角色会自动填入对应种子账号，也可以手动输入。</p>
+        <p class="demo-hint">账号: admin / teacher01 / student01 / academic01 / qbadmin01</p>
         <p class="demo-hint">密码: password123</p>
       </div>
     </div>
@@ -76,6 +77,14 @@ const roleUserMap: Record<string, string> = {
   qb_admin: 'qbadmin01',
 }
 
+const roleHomeMap: Record<string, string> = {
+  student: '/dashboard',
+  teacher: '/teacher',
+  academic: '/academic',
+  admin: '/admin',
+  qb_admin: '/qb-admin',
+}
+
 async function handleLogin() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
@@ -109,7 +118,7 @@ async function handleLogin() {
     }
 
     ElMessage.success('登录成功')
-    router.push('/dashboard')
+    router.push(roleHomeMap[userStore.role] || '/dashboard')
   } catch (e: any) {
     ElMessage.error(e?.message || '登录失败')
   } finally {
@@ -132,8 +141,8 @@ function applyRoleAccount(role: string | number | boolean | undefined) {
   justify-content: center;
   min-height: 100vh;
   background:
-    linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.96) 48%, rgba(17, 24, 39, 0.98) 100%),
-    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 12px);
+    linear-gradient(135deg, rgba(248, 250, 252, 0.94) 0%, rgba(241, 245, 249, 0.96) 48%, rgba(236, 254, 255, 0.92) 100%),
+    repeating-linear-gradient(135deg, rgba(79, 70, 229, 0.035) 0 1px, transparent 1px 16px);
   position: relative;
   overflow: hidden;
 }
@@ -143,6 +152,12 @@ function applyRoleAccount(role: string | number | boolean | undefined) {
   position: relative;
   z-index: 10;
   padding: 42px 42px 34px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(79, 70, 229, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.14), 0 2px 10px rgba(79, 70, 229, 0.08);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 .login-logo {
@@ -156,7 +171,7 @@ function applyRoleAccount(role: string | number | boolean | undefined) {
   h1 {
     font-size: 30px;
     font-weight: 700;
-    background: linear-gradient(135deg, #ffffff, #67e8f9);
+    background: linear-gradient(135deg, #1f2937, #4f46e5);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -164,7 +179,7 @@ function applyRoleAccount(role: string | number | boolean | undefined) {
     margin: 0 0 4px;
   }
   p {
-    color: var(--color-text-muted);
+    color: #64748b;
     font-size: 14px;
     margin: 0;
   }
@@ -179,7 +194,17 @@ function applyRoleAccount(role: string | number | boolean | undefined) {
     min-width: 76px;
     text-align: center;
     font-size: 12px;
-    border-radius: 8px !important; border: 1px solid rgba(148, 163, 184, 0.18) !important; background: rgba(255, 255, 255, 0.06) !important;
+    border-radius: 8px !important;
+    border: 1px solid rgba(148, 163, 184, 0.28) !important;
+    background: rgba(255, 255, 255, 0.74) !important;
+    color: #475569;
+    box-shadow: none !important;
+  }
+
+  :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+    color: #fff;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4) !important;
+    border-color: transparent !important;
   }
 }
 
@@ -198,8 +223,35 @@ function applyRoleAccount(role: string | number | boolean | undefined) {
 
 .demo-hint {
   font-size: 12px;
-  color: var(--color-text-muted);
+  color: #64748b;
   margin: 2px 0;
+}
+
+@media (max-width: 520px) {
+  .login-page {
+    padding: 24px 16px;
+    overflow: auto;
+  }
+
+  .login-card {
+    width: 100%;
+    padding: 32px 22px 26px;
+  }
+
+  .login-logo {
+    margin-bottom: 24px;
+
+    h1 {
+      font-size: 26px;
+    }
+  }
+
+  .role-group {
+    :deep(.el-radio-button__inner) {
+      min-width: 68px;
+      padding: 10px 12px;
+    }
+  }
 }
 </style>
 

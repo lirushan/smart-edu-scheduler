@@ -39,7 +39,7 @@
     />
 
     <!-- 新增/编辑弹窗 -->
-    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑考试' : '新增考试'" width="520px">
+    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑考试' : '新增考试'" width="520px" append-to-body>
       <el-form :model="form" label-width="100px">
         <el-form-item label="考试名称"><el-input v-model="form.examName" /></el-form-item>
         <el-form-item label="关联课程">

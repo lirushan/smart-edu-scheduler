@@ -44,7 +44,7 @@
     />
 
     <!-- 新增/编辑弹窗 -->
-    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑方案' : '新增方案'" width="500px">
+    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑方案' : '新增方案'" width="500px" append-to-body>
       <el-form :model="form" label-width="100px">
         <el-form-item label="专业"><el-input v-model="form.major" /></el-form-item>
         <el-form-item label="年级"><el-input v-model="form.grade" placeholder="如 2024级" /></el-form-item>

@@ -19,6 +19,7 @@ import requests
 # 配置
 # ============================================================
 BASE_URL = os.environ.get("SMART_EDU_BASE_URL", "http://localhost:8085")
+HEALTH_BASE_URL = os.environ.get("SMART_EDU_HEALTH_BASE_URL", BASE_URL)
 TIMEOUT = 10  # 单次请求超时秒数
 
 # 种子账号（来自 STARTUP-GUIDE.md）
@@ -159,30 +160,32 @@ def describe_data(data: Any) -> str:
 
 def test_01_health_check() -> None:
     """健康检查"""
-    url = f"{BASE_URL}/api/v1/actuator/health"
-    try:
-        resp = requests.get(url, timeout=TIMEOUT)
-    except requests.RequestException as e:
-        log_result(1, "健康检查", False, f"请求异常: {e}")
-        return
-
-    if resp.status_code == 200:
-        log_result(1, "健康检查", True, f"HTTP 200, body={resp.text[:80]}")
-    else:
-        # 尝试 /actuator/health（不带 /api/v1 前缀）
-        url2 = f"{BASE_URL}/actuator/health"
+    paths = ("/api/v1/actuator/health", "/actuator/health")
+    failures = []
+    for path in paths:
+        url = f"{HEALTH_BASE_URL}{path}"
         try:
-            resp2 = requests.get(url2, timeout=TIMEOUT)
-            if resp2.status_code == 200:
-                log_result(1, "健康检查", True,
-                           f"经由 /actuator/health, HTTP 200, body={resp2.text[:80]}")
-            else:
-                log_result(1, "健康检查", False,
-                           f"/api/v1/actuator/health={resp.status_code}, "
-                           f"/actuator/health={resp2.status_code}")
-        except requests.RequestException as e2:
-            log_result(1, "健康检查", False,
-                       f"HTTP {resp.status_code}, 后备路径异常: {e2}")
+            resp = requests.get(url, timeout=TIMEOUT)
+        except requests.RequestException as e:
+            failures.append(f"{path}=请求异常:{e}")
+            continue
+
+        if resp.status_code != 200:
+            failures.append(f"{path}=HTTP {resp.status_code}")
+            continue
+
+        try:
+            body = resp.json()
+        except ValueError:
+            failures.append(f"{path}=非 JSON 响应")
+            continue
+
+        if body.get("status") == "UP":
+            log_result(1, "健康检查", True, f"经由 {path}, status=UP")
+            return
+        failures.append(f"{path}=status {body.get('status')}")
+
+    log_result(1, "健康检查", False, "; ".join(failures))
 
 
 def test_02_admin_login() -> None:
