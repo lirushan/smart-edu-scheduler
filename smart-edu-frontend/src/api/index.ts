@@ -78,6 +78,15 @@ export const userApi = {
   delete: (id: number) => http.delete(`/admin/users/${id}`),
 }
 
+// ===== 角色管理 =====
+export const roleApi = {
+  list: (params?: Record<string, any>) => http.get('/admin/roles', { params }),
+  detail: (id: number) => http.get(`/admin/roles/${id}`),
+  menuTree: () => http.get('/admin/roles/menus/tree'),
+  toggleStatus: (id: number, status: number) => http.put(`/admin/roles/${id}/status`, { status }),
+  updateMenus: (id: number, menuIds: number[]) => http.put(`/admin/roles/${id}/menus`, { menuIds }),
+}
+
 // ===== 课程审核 =====
 export const approvalApi = {
   list: (params?: Record<string, any>) => http.get('/approvals/offerings', { params }),

@@ -19,6 +19,7 @@ const QuestionBank = () => import('@/views/teacher/QuestionBank.vue')
 const AdminDashboard = () => import('@/views/admin/Dashboard.vue')
 const UserManagement = () => import('@/views/admin/UserManagement.vue')
 const CourseApproval = () => import('@/views/admin/CourseApproval.vue')
+const RoleManagement = () => import('@/views/admin/RoleManagement.vue')
 
 // 教务端
 const AcademicDashboard = () => import('@/views/academic/Dashboard.vue')
@@ -76,7 +77,7 @@ const routes: RouteRecordRaw[] = [
       // ===== 管理端 =====
       { path: 'admin', name: 'AdminDashboard', component: AdminDashboard, meta: { title: '工作台', role: 'admin' } },
       { path: 'admin/users', name: 'UserManagement', component: UserManagement, meta: { title: '用户管理', role: 'admin' } },
-      { path: 'admin/roles', name: 'RoleManagement', component: () => SkeletonPage, meta: { title: '角色管理', role: 'admin' }, props: { title: '角色管理' } },
+      { path: 'admin/roles', name: 'RoleManagement', component: RoleManagement, meta: { title: '角色管理', role: 'admin' } },
       { path: 'approvals', name: 'CourseApproval', component: CourseApproval, meta: { title: '课程审核', role: 'admin,academic' } },
 
       // ===== 教务端 =====
