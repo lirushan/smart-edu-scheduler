@@ -1,0 +1,76 @@
+// ============================================================
+// CSS Custom Properties — 全局设计令牌
+// Figma 紫色毛玻璃色彩系统 (Light & Dark)
+// ============================================================
+
+:root,
+html.light {
+  --color-bg: linear-gradient(135deg, #f0ecff 0%, #e8e0ff 25%, #f5f0ff 50%, #ede4ff 75%, #f8f0fe 100%);
+  --color-bg-solid: #f5f3ff;
+  --color-bg-alt: #ede9fe;
+  --color-surface: rgba(255, 255, 255, 0.72);
+  --color-surface-hover: rgba(250, 245, 255, 0.85);
+  --color-border: rgba(139, 92, 246, 0.1);
+  --color-border-hover: rgba(139, 92, 246, 0.2);
+  --color-text: #1a1a2e;
+  --color-text-secondary: rgba(26, 26, 46, 0.6);
+  --color-text-muted: rgba(26, 26, 46, 0.35);
+  --color-brand: #7c3aed;
+  --color-brand-light: #8b5cf6;
+  --gradient-brand: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-dark: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #ddd6fe 100%);
+  --radius: 0.75rem;
+  --shadow-glow: 0 0 40px rgba(139, 92, 246, 0.12);
+  --shadow-glow-lg: 0 0 80px rgba(139, 92, 246, 0.18);
+  --shadow-card: 0 2px 8px rgba(139, 92, 246, 0.06), 0 8px 24px rgba(139, 92, 246, 0.04);
+  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html.dark {
+  --color-bg: #0f0f23;
+  --color-bg-solid: #0f0f23;
+  --color-bg-alt: #1a1a2e;
+  --color-surface: #1a1a2e;
+  --color-surface-hover: #242442;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.15);
+  --color-text: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.6);
+  --color-text-muted: rgba(255, 255, 255, 0.35);
+  --color-brand: #8b5cf6;
+  --color-brand-light: #a78bfa;
+  --gradient-brand: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-dark: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  --radius: 0.75rem;
+  --shadow-glow: 0 0 40px rgba(139, 92, 246, 0.15);
+  --shadow-glow-lg: 0 0 80px rgba(139, 92, 246, 0.2);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // Element Plus 暗色 CSS 变量覆盖
+  --el-bg-color-overlay: #1a1a2e;
+  --el-bg-color: #1a1a2e;
+  --el-bg-color-page: #0f0f23;
+  --el-fill-color-blank: rgba(255, 255, 255, 0.04);
+  --el-fill-color: rgba(255, 255, 255, 0.04);
+  --el-fill-color-light: rgba(255, 255, 255, 0.03);
+  --el-border-color: rgba(255, 255, 255, 0.08);
+  --el-border-color-light: rgba(255, 255, 255, 0.06);
+  --el-border-color-lighter: rgba(255, 255, 255, 0.04);
+  --el-border-color-extra-light: rgba(255, 255, 255, 0.02);
+  --el-text-color-primary: rgba(255, 255, 255, 0.85);
+  --el-text-color-regular: rgba(255, 255, 255, 0.6);
+  --el-text-color-secondary: rgba(255, 255, 255, 0.45);
+  --el-text-color-placeholder: rgba(255, 255, 255, 0.25);
+  --el-text-color-disabled: rgba(255, 255, 255, 0.2);
+  --el-disabled-bg-color: rgba(255, 255, 255, 0.04);
+  --el-disabled-border-color: rgba(255, 255, 255, 0.06);
+  --el-disabled-text-color: rgba(255, 255, 255, 0.2);
+}
+
+// ============================================================
+// SCSS Variables (编译时用)
+// ============================================================
+$font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+$sidebar-width: 240px;
+$header-height: 56px;

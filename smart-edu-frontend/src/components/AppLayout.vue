@@ -1,0 +1,423 @@
+<template>
+  <div class="app-layout" :class="{ 'dark-mode': isDark }">
+    <!-- 光球背景层 -->
+    <div class="bg-orbs">
+      <div class="bg-orb bg-orb-1"></div>
+      <div class="bg-orb bg-orb-2"></div>
+      <div class="bg-orb bg-orb-3"></div>
+    </div>
+
+    <!-- 玻璃态侧边栏 -->
+    <aside class="sidebar-glass">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" fill="url(#lg)" />
+            <path d="M2 17l10 5 10-5" stroke="url(#lg)" stroke-width="2" fill="none" />
+            <path d="M2 12l10 5 10-5" stroke="url(#lg)" stroke-width="2" fill="none" />
+            <defs><linearGradient id="lg" x1="2" y1="2" x2="22" y2="22"><stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#667eea"/></linearGradient></defs>
+          </svg>
+        </div>
+        <span class="logo-text">智教通</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <template v-for="item in menuItems" :key="item.id || item.label">
+          <div v-if="item.section" class="nav-section">{{ item.section }}</div>
+          <router-link
+            v-else
+            :to="item.path"
+            class="nav-item"
+            :class="{ active: isActive(item.path) }"
+          >
+            <span class="nav-icon" v-html="item.iconSvg || ''"></span>
+            <el-icon v-if="!item.iconSvg && item.iconComp" :size="18">
+              <component :is="item.iconComp" />
+            </el-icon>
+            <span class="nav-label">{{ item.label }}</span>
+            <span v-if="isActive(item.path)" class="active-dot"></span>
+          </router-link>
+        </template>
+      </nav>
+
+      <!-- 用户信息 + 主题切换 -->
+      <div class="sidebar-footer">
+        <div class="user-info" @click="handleLogout">
+          <el-avatar :size="32" class="user-avatar">
+            {{ userStore.userInfo?.realName?.charAt(0) || 'U' }}
+          </el-avatar>
+          <div class="user-detail">
+            <div class="user-name">{{ userStore.userInfo?.realName || '用户' }}</div>
+            <div class="user-role">{{ roleText }}</div>
+          </div>
+          <el-icon :size="16" class="logout-icon"><SwitchButton /></el-icon>
+        </div>
+        <div class="theme-toggle" @click="toggleDark">
+          <el-icon :size="16"><Sunny v-if="isDark" /><Moon v-else /></el-icon>
+          <span>{{ isDark ? '浅色模式' : '深色模式' }}</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="main-area">
+      <header class="app-header glass">
+        <el-breadcrumb separator="·">
+          <el-breadcrumb-item>
+            <span style="color: var(--color-text-secondary);">{{ roleText }}工作台</span>
+          </el-breadcrumb-item>
+          <el-breadcrumb-item v-if="route.meta.title && route.meta.title !== '工作台'">
+            {{ route.meta.title }}
+          </el-breadcrumb-item>
+        </el-breadcrumb>
+        <div class="header-actions">
+          <el-badge :value="3" :max="99" class="notification-badge">
+            <el-icon :size="20" class="header-icon"><Bell /></el-icon>
+          </el-badge>
+          <span class="time-text">{{ currentTime }}</span>
+        </div>
+      </header>
+      <div class="page-content">
+        <router-view />
+      </div>
+    </main>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  Bell, SwitchButton, Reading, Calendar, List, DataLine, Notebook,
+  UserFilled, Setting, Monitor, Sunny, Moon, Clock, View, Star,
+  Document, Upload, Checked, Collection, Timer
+} from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/user'
+
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const isDark = ref(false)
+
+const activeMenu = computed(() => route.path)
+
+const roleText = computed(() => {
+  const map: Record<string, string> = { student: '学生', teacher: '教师', academic: '教务', admin: '管理员', qb_admin: '题库管理员' }
+  return map[userStore.role] || '用户'
+})
+
+const menuItems = computed(() => {
+  const role = userStore.role
+  const iconMap: Record<string, any> = {
+    Monitor, Reading, Calendar, List, DataLine, Notebook, UserFilled, Setting,
+    Clock, View, Star, Document, Upload, Checked, Collection, Timer
+  }
+
+  const makeItem = (path: string, label: string, icon: any) => ({
+    path, label, iconComp: icon
+  })
+  const makeSection = (label: string) => ({ section: label })
+
+  if (role === 'student') return [
+    makeSection('主菜单'),
+    makeItem('/dashboard', '工作台', Monitor),
+    makeItem('/courses', '课程广场', Reading),
+    makeItem('/schedule', '我的课表', Calendar),
+    makeItem('/enrollments', '我的选课', List),
+    makeSection('学习'),
+    makeItem('/scores', '我的成绩', DataLine),
+    makeItem('/exams', '考试中心', Timer),
+  ]
+  if (role === 'teacher') return [
+    makeSection('主菜单'),
+    makeItem('/teacher', '工作台', Monitor),
+    makeItem('/schedule', '我的课表', Calendar),
+    makeSection('教学管理'),
+    makeItem('/teacher/scores', '成绩录入', DataLine),
+    makeItem('/teacher/questions', '题库管理', Collection),
+  ]
+  if (role === 'academic') return [
+    makeSection('主菜单'),
+    makeItem('/academic', '工作台', Monitor),
+    makeSection('选课管理'),
+    makeItem('/academic/rounds', '选课轮次', Clock),
+    makeItem('/academic/enroll-monitor', '选课监控', View),
+    makeSection('教学管理'),
+    makeItem('/academic/schedules', '排课管理', Calendar),
+    makeItem('/academic/exams', '考试管理', Timer),
+    makeItem('/academic/scores', '成绩审核', DataLine),
+    makeItem('/academic/evaluation', '教学评价', Star),
+    makeSection('培养管理'),
+    makeItem('/academic/training-plan', '培养方案', Document),
+    makeItem('/academic/new-student', '新生导入', Upload),
+    makeSection('审核'),
+    makeItem('/approvals', '课程审核', Checked),
+  ]
+  if (role === 'admin') return [
+    makeSection('主菜单'),
+    makeItem('/admin', '工作台', Monitor),
+    makeSection('系统管理'),
+    makeItem('/admin/users', '用户管理', UserFilled),
+    makeItem('/admin/roles', '角色管理', Setting),
+    makeSection('审核'),
+    makeItem('/approvals', '课程审核', Checked),
+  ]
+  if (role === 'qb_admin') return [
+    makeSection('主菜单'),
+    makeItem('/qb-admin', '工作台', Monitor),
+    makeItem('/teacher/questions', '题库管理', Collection),
+    makeItem('/qb-admin/audit', '题库审核', Checked),
+  ]
+  return []
+})
+
+function isActive(path: string) {
+  if (path === '/dashboard' || path === '/teacher' || path === '/admin' || path === '/academic' || path === '/qb-admin') {
+    return route.path === path
+  }
+  return route.path.startsWith(path)
+}
+
+const currentTime = ref('')
+let timer: ReturnType<typeof setInterval>
+
+function updateTime() {
+  const now = new Date()
+  currentTime.value = now.toLocaleDateString('zh-CN', {
+    year: 'numeric', month: 'long', day: 'numeric', weekday: 'long',
+  }) + ' ' + now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+}
+
+function toggleDark() {
+  isDark.value = !isDark.value
+  document.documentElement.classList.toggle('dark', isDark.value)
+  localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+}
+
+async function handleLogout() {
+  await userStore.logout()
+  router.push('/login')
+}
+
+onMounted(() => {
+  updateTime()
+  timer = setInterval(updateTime, 30000)
+  // 读取主题偏好
+  const savedTheme = localStorage.getItem('theme')
+  if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    isDark.value = true
+    document.documentElement.classList.add('dark')
+  }
+})
+
+onUnmounted(() => clearInterval(timer))
+</script>
+
+<style lang="scss" scoped>
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+// 光球背景
+.bg-orbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+}
+.bg-orb-1 { width: 500px; height: 500px; background: rgba(139, 92, 246, 0.12); top: -150px; right: -100px; }
+.bg-orb-2 { width: 350px; height: 350px; background: rgba(59, 130, 246, 0.1); bottom: -100px; left: -80px; }
+.bg-orb-3 { width: 250px; height: 250px; background: rgba(236, 72, 153, 0.08); top: 50%; left: 45%; }
+
+// 玻璃态侧边栏
+.sidebar-glass {
+  width: 240px;
+  min-height: 100vh;
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(
+    180deg,
+    rgba(30, 20, 60, 0.85) 0%,
+    rgba(20, 15, 45, 0.9) 50%,
+    rgba(15, 10, 35, 0.92) 100%
+  );
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border-right: 1px solid rgba(139, 92, 246, 0.15);
+  box-shadow: 4px 0 24px rgba(139, 92, 246, 0.08);
+}
+
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 18px;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.12);
+  .logo-text {
+    font-size: 18px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #a78bfa, #667eea);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 2px;
+  }
+}
+
+// 菜单导航
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 10px;
+}
+
+.nav-section {
+  padding: 12px 12px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(167, 139, 250, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin: 1px 0;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // 悬浮紫光从左滑到右
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.08), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s ease;
+    pointer-events: none;
+  }
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(139, 92, 246, 0.1);
+    &::after { transform: translateX(0); }
+  }
+
+  &.active {
+    color: #fff;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(102, 126, 234, 0.2));
+    animation: sidebarGlow 3s ease-in-out infinite;
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.2);
+    font-weight: 600;
+
+    .nav-icon { opacity: 1; }
+  }
+
+  .nav-label { flex: 1; }
+}
+
+.active-dot {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: #a78bfa;
+  animation: breathe 2s ease-in-out infinite;
+}
+
+// 侧边栏底部
+.sidebar-footer {
+  border-top: 1px solid rgba(139, 92, 246, 0.12);
+  padding: 12px 14px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover { background: rgba(139, 92, 246, 0.1); }
+  .user-detail { flex: 1; min-width: 0; }
+  .user-name { font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 500; }
+  .user-role { font-size: 11px; color: rgba(255,255,255,0.4); }
+  .logout-icon { color: rgba(255,255,255,0.3); }
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  margin-top: 6px;
+  border-radius: 8px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover { background: rgba(139, 92, 246, 0.1); color: rgba(255,255,255,0.6); }
+}
+
+// 主内容
+.main-area {
+  margin-left: 240px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+.app-header {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.6) !important;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.08);
+
+  html.dark & {
+    background: rgba(20, 18, 45, 0.6) !important;
+    border-bottom-color: rgba(139, 92, 246, 0.1);
+  }
+
+  .header-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .header-icon { color: var(--color-text-secondary); cursor: pointer; }
+  .time-text { font-size: 12px; color: var(--color-text-muted); }
+}
+
+.page-content {
+  padding: 20px 24px;
+  flex: 1;
+  position: relative;
+}
+</style>

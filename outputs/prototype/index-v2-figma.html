@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智教通 — 全页面原型 V2.0 (Figma Design)</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ─── Figma Design Tokens ─── */
+:root {
+  --brand-50: #f5f3ff; --brand-100: #ede9fe; --brand-200: #ddd6fe;
+  --brand-300: #c4b5fd; --brand-400: #a78bfa; --brand-500: #8b5cf6;
+  --brand-600: #7c3aed; --brand-700: #6d28d9; --brand-800: #5b21b6; --brand-900: #4c1d95;
+  --bg: #f0ecff; --bg-alt: #ede9fe; --surface: rgba(255,255,255,0.72); --surface-hover: rgba(250,245,255,0.85);
+  --border: rgba(139,92,246,0.1); --border-hover: rgba(139,92,246,0.25);
+  --text: #1a1a2e; --text-secondary: rgba(26,26,46,0.6); --text-muted: rgba(26,26,46,0.35);
+  --danger: #ef4444; --success: #10b981; --warning: #f59e0b;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.08), 0 0 0 1px rgba(139,92,246,0.1);
+  --shadow-elevated: 0 8px 32px rgba(0,0,0,0.08);
+  --shadow-glow: 0 0 40px rgba(139,92,246,0.15);
+  --radius-sm: 8px; --radius: 12px; --radius-lg: 16px; --radius-xl: 24px;
+  --font: 'Space Grotesk', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --sidebar-w: 220px; --header-h: 56px;
+}
+
+/* ─── Global ─── */
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font);font-size:14px;color:var(--text);background:linear-gradient(135deg,var(--bg),var(--bg-alt));min-height:100vh;}
+a{color:var(--brand-600);text-decoration:none;}
+a:hover{color:var(--brand-700);}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:var(--brand-200);border-radius:10px;}
+
+/* ─── Glass Card (4-layer shadow) ─── */
+.glass{background:rgba(255,255,255,0.72);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.35);border-radius:var(--radius-lg);
+  box-shadow:
+    0 8px 40px rgba(139,92,246,0.12),    /* Ambient purple */
+    0 4px 16px rgba(0,0,0,0.05),          /* Directional */
+    0 2px 4px rgba(0,0,0,0.04),           /* Contact */
+    inset 0 1px 0 rgba(255,255,255,0.7);  /* Rim light top */
+  padding:24px;margin-bottom:20px;transition:all .3s;}
+.glass:hover{box-shadow:0 8px 40px rgba(139,92,246,0.18),0 4px 20px rgba(0,0,0,0.08),0 2px 4px rgba(0,0,0,0.04),inset 0 1px 0 rgba(255,255,255,0.8);}
+
+/* ─── Buttons ─── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:0 16px;height:38px;border:none;
+  border-radius:12px;font-size:13px;font-weight:500;font-family:var(--font);cursor:pointer;transition:all .2s;}
+.btn-primary{background:linear-gradient(135deg,var(--brand-500),var(--brand-600));color:#fff;box-shadow:0 2px 8px rgba(139,92,246,0.3);}
+.btn-primary:hover{background:linear-gradient(135deg,var(--brand-600),var(--brand-700));box-shadow:0 4px 16px rgba(139,92,246,0.4);transform:translateY(-1px);}
+.btn-outline{background:transparent;color:var(--brand-600);border:1px solid var(--brand-300);}
+.btn-outline:hover{background:var(--brand-50);border-color:var(--brand-500);}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-danger:hover{opacity:0.9;}
+.btn-sm{height:30px;padding:0 12px;font-size:12px;border-radius:8px;}
+.btn-xs{height:26px;padding:0 10px;font-size:11px;border-radius:6px;}
+.btn:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* ─── Inputs ─── */
+.input,.select{height:38px;padding:0 14px;border:1px solid var(--border);border-radius:12px;
+  font-size:13px;font-family:var(--font);outline:none;background:rgba(255,255,255,0.6);transition:all .2s;color:var(--text);}
+.input:focus,.select:focus{border-color:var(--brand-500);box-shadow:0 0 0 3px rgba(139,92,246,0.1);}
+.select{cursor:pointer;appearance:none;padding-right:32px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%238b5cf6' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+textarea.input{height:auto;padding:10px 14px;resize:vertical;}
+
+/* ─── Tags ─── */
+.tag{display:inline-block;padding:2px 10px;border-radius:6px;font-size:11px;font-weight:500;}
+.tag-purple{background:var(--brand-100);color:var(--brand-700);}
+.tag-green{background:#d1fae5;color:#065f46;}
+.tag-orange{background:#fef3c7;color:#92400e;}
+.tag-red{background:#fee2e2;color:#991b1b;}
+.tag-blue{background:#dbeafe;color:#1e40af;}
+.tag-gray{background:#f3f4f6;color:#6b7280;}
+
+/* ─── Stats Row ─── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
+.stat-card{background:var(--surface);backdrop-filter:blur(16px);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:20px;display:flex;align-items:center;gap:14px;
+  box-shadow:0 2px 8px rgba(139,92,246,0.05);transition:all .2s;}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-card-hover);}
+.stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.stat-icon.purple{background:linear-gradient(135deg,var(--brand-100),var(--brand-200));color:var(--brand-600);}
+.stat-icon.green{background:#d1fae5;color:#059669;}
+.stat-icon.orange{background:#fef3c7;color:#d97706;}
+.stat-icon.blue{background:#dbeafe;color:#2563eb;}
+.stat-val{font-size:26px;font-weight:700;color:var(--text);line-height:1;}
+.stat-lbl{font-size:12px;color:var(--text-secondary);margin-top:3px;}
+
+/* ─── Tables ─── */
+.tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.tbl th{background:rgba(139,92,246,0.04);padding:10px 14px;text-align:left;font-weight:600;color:var(--text-secondary);border-bottom:2px solid var(--border);white-space:nowrap;font-size:12px;}
+.tbl td{padding:10px 14px;border-bottom:1px solid var(--border);}
+.tbl tbody tr:hover{background:rgba(139,92,246,0.03);}
+
+/* ─── Filters ─── */
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
+
+/* ─── Pagination ─── */
+.pages{display:flex;justify-content:center;gap:4px;margin-top:16px;}
+.pages button{min-width:32px;height:32px;border:1px solid var(--border);background:#fff;border-radius:8px;cursor:pointer;font-size:13px;font-family:var(--font);}
+.pages button.active{background:var(--brand-500);color:#fff;border-color:var(--brand-500);}
+.pages button:hover:not(.active){border-color:var(--brand-400);color:var(--brand-600);}
+
+/* ─── Schedule Grid ─── */
+.sched{display:grid;grid-template-columns:80px repeat(7,1fr);gap:2px;font-size:11px;}
+.sched-h{background:rgba(139,92,246,0.04);padding:8px;text-align:center;font-weight:600;color:var(--text-secondary);border-radius:6px;}
+.sched-t{background:rgba(139,92,246,0.03);padding:8px;text-align:center;color:var(--text-muted);font-size:10px;border-radius:6px;}
+.sched-c{min-height:56px;background:rgba(255,255,255,0.6);border:1px solid var(--border);border-radius:8px;padding:4px;}
+.sched-item{background:var(--brand-50);border-radius:4px;padding:3px 6px;margin-bottom:2px;border-left:3px solid var(--brand-500);font-size:10px;cursor:pointer;}
+.sched-item.green{background:#d1fae5;border-color:#10b981;}
+.sched-item.orange{background:#fef3c7;border-color:#f59e0b;}
+.sched-item.purple{background:var(--brand-100);border-color:var(--brand-500);}
+
+/* ─── Course Cards ─── */
+.c-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+.c-card{background:var(--surface);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:20px;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(139,92,246,0.04);}
+.c-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-card-hover);border-color:var(--brand-300);}
+.c-card .cc-h{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.c-card .cc-t{font-size:15px;font-weight:600;}
+.c-card .cc-m{font-size:12px;color:var(--text-secondary);margin-bottom:4px;}
+.c-card .cc-f{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--border);margin-top:10px;}
+
+/* ─── Modal ─── */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);z-index:200;
+  display:flex;align-items:center;justify-content:center;display:none;}
+.modal.show{display:flex;}
+.modal-box{background:var(--surface);backdrop-filter:blur(24px);border:1px solid var(--border);
+  border-radius:var(--radius-xl);box-shadow:0 20px 60px rgba(0,0,0,0.15);width:640px;max-height:82vh;overflow-y:auto;
+  animation:modalIn .2s ease;}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(-10px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-h{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-h h3{font-size:17px;font-weight:600;}
+.modal-close{width:32px;height:32px;border:none;background:none;font-size:20px;cursor:pointer;color:var(--text-secondary);border-radius:8px;}
+.modal-close:hover{background:var(--brand-50);color:var(--brand-600);}
+.modal-b{padding:20px 24px;}
+.modal-f{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+
+/* ─── Layout ─── */
+.app{display:flex;min-height:100vh;position:relative;overflow:hidden;}
+.app::before{content:'';position:fixed;inset:0;z-index:0;
+  background:linear-gradient(135deg,#f0ecff 0%,#ede9fe 40%,#e0d7fe 100%);}
+
+/* Floating jelly orbs (5 in total) */
+.orb{position:fixed;border-radius:50%;filter:blur(60px);opacity:0.25;pointer-events:none;z-index:0;}
+.orb-1{width:240px;height:240px;background:var(--brand-400);top:10%;left:60%;animation:orbFloat 10s ease-in-out infinite;}
+.orb-2{width:180px;height:180px;background:#a78bfa;top:50%;left:45%;animation:orbFloat 12s ease-in-out infinite reverse;}
+.orb-3{width:120px;height:120px;background:#c4b5fd;top:75%;left:70%;animation:orbFloat 8s ease-in-out infinite;}
+.orb-4{width:160px;height:160px;background:#8b5cf6;top:20%;left:80%;animation:orbFloat 14s ease-in-out infinite;}
+.orb-5{width:100px;height:100px;background:#ddd6fe;top:65%;left:55%;animation:orbFloat 9s ease-in-out infinite reverse;}
+@keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(20px,-30px) scale(1.08);}}
+
+.sidebar{width:var(--sidebar-w);background:rgba(26,26,46,0.72);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  color:#fff;position:fixed;left:0;top:0;bottom:0;z-index:100;display:flex;flex-direction:column;
+  border-right:1px solid rgba(255,255,255,0.12);box-shadow:8px 0 40px rgba(139,92,246,0.12);}
+.side-h{padding:22px 20px 16px;display:flex;align-items:center;gap:12px;position:relative;z-index:2;}
+.side-h .logo-icon{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:700;color:#fff;flex-shrink:0;position:relative;overflow:hidden;
+  background:radial-gradient(circle at 30% 30%,#d8b4fe,#8b5cf6 50%,#6d28d9 90%,#4c1d95);
+  box-shadow:inset -4px -4px 10px rgba(0,0,0,0.25),inset 4px 4px 12px rgba(255,255,255,0.45),
+             0 6px 16px rgba(139,92,246,0.35),0 2px 4px rgba(0,0,0,0.15);}
+.side-h .logo-icon::before{content:'';position:absolute;top:8px;left:10px;width:16px;height:10px;background:rgba(255,255,255,0.65);border-radius:50%;filter:blur(3px);}
+.side-h h2{font-size:17px;font-weight:600;letter-spacing:0.3px;}
+.side-nav{flex:1;padding:8px 0;overflow-y:auto;position:relative;z-index:2;}
+.side-sec{padding:16px 20px 6px;font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:0.5px;}
+
+.side-item{display:flex;align-items:center;gap:12px;padding:10px 14px;margin:6px 12px;border-radius:16px;
+  cursor:pointer;transition:all .3s ease;color:rgba(255,255,255,0.7);font-size:13px;font-weight:500;
+  background:rgba(255,255,255,0.06);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.08);
+  box-shadow:0 8px 24px rgba(0,0,0,0.04),0 2px 4px rgba(0,0,0,0.03),inset 0 1px 0 rgba(255,255,255,0.12);
+  position:relative;overflow:hidden;}
+.side-item::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(139,92,246,0.25),transparent);transition:left .55s ease;}
+.side-item:hover::before{left:100%;}
+.side-item:hover{color:#fff;transform:translateY(-2px) scale(1.01);background:rgba(255,255,255,0.12);
+  box-shadow:0 12px 28px rgba(139,92,246,0.18),0 4px 8px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.18);}
+.side-item.active{color:#fff;background:linear-gradient(135deg,rgba(139,92,246,0.35),rgba(109,40,217,0.25));
+  border-color:rgba(139,92,246,0.45);animation:activePulse 3s ease-in-out infinite;}
+@keyframes activePulse{0%,100%{box-shadow:0 8px 24px rgba(0,0,0,0.04),0 2px 4px rgba(0,0,0,0.03),inset 0 1px 0 rgba(255,255,255,0.12);}50%{box-shadow:0 0 24px rgba(139,92,246,0.35),0 0 12px rgba(139,92,246,0.2),inset 0 0 16px rgba(139,92,246,0.25);}}
+
+.side-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:15px;flex-shrink:0;position:relative;overflow:hidden;color:#fff;transition:all .35s cubic-bezier(0.34,1.56,0.64,1);
+  background:radial-gradient(circle at 30% 30%,#e9d5ff,#a78bfa 50%,#7c3aed 85%,#5b21b6);
+  box-shadow:inset -3px -3px 8px rgba(0,0,0,0.2),inset 3px 3px 10px rgba(255,255,255,0.45),
+             0 4px 10px rgba(139,92,246,0.25),0 1px 2px rgba(0,0,0,0.1);}
+.side-icon::before{content:'';position:absolute;top:7px;left:9px;width:10px;height:6px;background:rgba(255,255,255,0.55);border-radius:50%;filter:blur(2px);}
+.side-item:hover .side-icon{transform:translateY(-3px) rotate(8deg) scale(1.1);filter:drop-shadow(0 6px 12px rgba(139,92,246,0.4));}
+.side-item.active .side-icon{box-shadow:inset -3px -3px 8px rgba(0,0,0,0.2),inset 3px 3px 10px rgba(255,255,255,0.5),0 0 16px rgba(139,92,246,0.6);}
+
+.side-label{flex:1;min-width:0;}
+.side-arrow{margin-left:auto;font-size:10px;transition:transform .3s;color:rgba(255,255,255,0.5);}
+.side-item:hover .side-arrow{color:#fff;}
+.side-children{padding:4px 8px 4px 56px;}
+.side-child{display:block;padding:6px 12px;margin:2px 0;border-radius:10px;color:rgba(255,255,255,0.55);font-size:12px;cursor:pointer;transition:all .2s;}
+.side-child:hover{color:#fff;background:rgba(139,92,246,0.15);}
+.side-child.active{color:#fff;background:rgba(139,92,246,0.25);}
+
+.side-foot{padding:14px 18px;margin:8px 12px;border-radius:16px;display:flex;align-items:center;gap:10px;cursor:pointer;
+  background:rgba(255,255,255,0.06);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.08);transition:all .3s;}
+.side-foot:hover{background:rgba(255,255,255,0.12);box-shadow:0 8px 24px rgba(139,92,246,0.12);}
+.side-foot .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--brand-400),var(--brand-700));
+  display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;
+  box-shadow:0 4px 10px rgba(139,92,246,0.25);}
+
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;position:relative;z-index:1;}
+.header{height:var(--header-h);background:rgba(255,255,255,0.62);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid rgba(255,255,255,0.3);display:flex;align-items:center;padding:0 24px;position:sticky;top:0;z-index:50;
+  box-shadow:0 4px 24px rgba(139,92,246,0.06);}
+.header .bc{font-size:13px;color:var(--text-secondary);}
+.header .bc span{color:var(--text);}
+.header .ha{margin-left:auto;display:flex;align-items:center;gap:16px;}
+.header .ha .badge{position:relative;cursor:pointer;font-size:18px;color:var(--text-secondary);transition:all .2s;}
+.header .ha .badge:hover{color:var(--brand-600);transform:scale(1.1);}
+.header .ha .badge .dot{position:absolute;top:2px;right:2px;width:7px;height:7px;background:var(--danger);border-radius:50%;border:2px solid rgba(255,255,255,0.6);animation:pulseDot 2s infinite;}
+@keyframes pulseDot{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.5);}50%{box-shadow:0 0 0 5px rgba(239,68,68,0);}}
+.content{padding:24px;flex:1;position:relative;z-index:1;}
+.content{padding:24px;flex:1;}
+
+/* ─── Login ─── */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;
+  background:linear-gradient(135deg,#1a1a2e 0%,#16213e 40%,#0f3460 70%,#2e1065 100%);position:relative;overflow:hidden;}
+.login-wrap .orb1,.login-wrap .orb2,.login-wrap .orb3{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.15;pointer-events:none;}
+.login-wrap .orb1{width:400px;height:400px;background:var(--brand-500);top:-100px;right:-100px;animation:float 8s infinite;}
+.login-wrap .orb2{width:300px;height:300px;background:#3b82f6;bottom:-50px;left:-50px;animation:float 10s infinite reverse;}
+.login-wrap .orb3{width:200px;height:200px;background:#ec4899;top:50%;left:50%;animation:float 6s infinite;}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(30px,-30px) scale(1.1);}}
+.login-box{width:420px;background:rgba(255,255,255,0.95);backdrop-filter:blur(24px);border-radius:var(--radius-xl);
+  padding:48px 40px;box-shadow:0 20px 80px rgba(0,0,0,0.3);position:relative;z-index:1;}
+.login-logo{text-align:center;margin-bottom:28px;}
+.login-logo .licon{width:52px;height:52px;background:linear-gradient(135deg,var(--brand-500),var(--brand-700));
+  border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:24px;color:#fff;margin-bottom:10px;}
+.login-logo h1{font-size:22px;font-weight:700;}
+.login-logo p{color:var(--text-secondary);font-size:12px;margin-top:4px;}
+.fg{margin-bottom:18px;}
+.fg label{display:block;font-size:12px;color:var(--text-secondary);margin-bottom:5px;font-weight:500;}
+.fg .role-row{display:flex;gap:6px;}
+.fg .role-btn{flex:1;height:36px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;font-size:12px;font-family:var(--font);transition:all .15s;color:var(--text-secondary);}
+.fg .role-btn:hover{border-color:var(--brand-400);color:var(--brand-500);}
+.fg .role-btn.active{background:var(--brand-50);border-color:var(--brand-500);color:var(--brand-600);font-weight:600;}
+
+/* ─── Misc ─── */
+.alert{padding:10px 16px;border-radius:10px;margin-bottom:16px;font-size:13px;}
+.alert-info{background:#dbeafe;color:#1e40af;}
+.alert-warn{background:#fef3c7;color:#92400e;}
+.flex-row{display:flex;align-items:center;gap:8px;}
+.flex-between{display:flex;justify-content:space-between;align-items:center;}
+.gap8{gap:8px;} .gap12{gap:12px;} .gap16{gap:16px;}
+.mb16{margin-bottom:16px;} .mt16{margin-top:16px;}
+.text-r{text-align:right;}
+.hidden{display:none!important;}
+.text-sec{font-size:12px;color:var(--text-secondary);}
+.w-full{width:100%;}
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:16px;}
+.tabs .tab{padding:8px 20px;cursor:pointer;color:var(--text-secondary);font-size:13px;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;}
+.tabs .tab:hover{color:var(--brand-500);}
+.tabs .tab.active{color:var(--brand-600);border-bottom-color:var(--brand-500);font-weight:600;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.mt4{margin-top:4px;}
+.mt8{margin-top:8px;}
+@media(max-width:1200px){.stats{grid-template-columns:repeat(2,1fr);}.form-grid,.form-grid3{grid-template-columns:1fr;}}
+@media(max-width:768px){.sidebar{display:none;}.main{margin-left:0;}.stats{grid-template-columns:1fr;}.c-grid{grid-template-columns:1fr;}}
+
+/* ─── Role selector in login ─── */
+.role-row{display:flex;gap:6px;}
+.role-row .role-btn{flex:1;height:36px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;font-size:12px;font-family:var(--font);transition:all .15s;color:var(--text-secondary);}
+.role-row .role-btn:hover{border-color:var(--brand-400);color:var(--brand-500);}
+.role-row .role-btn.active{background:var(--brand-50);border-color:var(--brand-500);color:var(--brand-600);font-weight:600;}
+
+/* ─── Progress bar ─── */
+.progress{height:6px;background:var(--brand-100);border-radius:3px;overflow:hidden;}
+.progress .fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--brand-500),var(--brand-600));transition:width .3s;}
+.progress .fill.green{background:linear-gradient(90deg,#10b981,#059669);}
+.progress .fill.orange{background:linear-gradient(90deg,#f59e0b,#d97706);}
+
+/* ─── Tree ─── */
+.tree{padding:4px 0;}
+.tree-node{padding:6px 12px;margin:2px 0;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;transition:all .15s;}
+.tree-node:hover{background:var(--brand-50);}
+.tree-node .expand{width:20px;text-align:center;font-size:10px;color:var(--text-muted);}
+.tree-children{padding-left:24px;}
+.drag-placeholder{border:2px dashed var(--brand-300);border-radius:8px;height:36px;margin:2px 0;background:var(--brand-50);}
+
+/* ─── Checkbox grid ─── */
+.check-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;font-size:12px;}
+.check-grid label{display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all .15s;}
+.check-grid label:hover{background:var(--brand-50);}
+
+/* Radar chart container */
+.radar-placeholder{width:280px;height:280px;background:var(--brand-50);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--brand-400);font-size:14px;position:relative;margin:0 auto;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div id="pg-login" class="login-wrap">
+  <div class="orb1"></div><div class="orb2"></div><div class="orb3"></div>
+  <div class="login-box">
+    <div class="login-logo"><div class="licon">&#9997;</div><h1>智 教 通</h1><p>学生课程报名与排课管理系统 V2.0</p></div>
+    <div class="fg"><label>账号</label><input class="input w-full" id="lu" value="2024001001" placeholder="学号/工号"></div>
+    <div class="fg"><label>密码</label><input class="input w-full" id="lp" type="password" value="password" placeholder="密码"></div>
+    <div class="fg"><label>角色</label>
+      <div class="role-row" id="role-sel">
+        <button class="role-btn active" data-r="student">&#127891; 学生</button>
+        <button class="role-btn" data-r="teacher">&#128100; 教师</button>
+        <button class="role-btn" data-r="academic">&#128203; 教务</button>
+        <button class="role-btn" data-r="admin">&#9881; 管理</button>
+      </div>
+    </div>
+    <button class="btn btn-primary w-full" style="height:44px;font-size:15px;" onclick="doLogin()">登 录</button>
+    <p style="text-align:center;margin-top:14px;font-size:11px;color:var(--text-muted);">原型演示 &middot; 点击登录体验全 35 页</p>
+  </div>
+</div>
+
+<!-- ═══════════════ APP ═══════════════ -->
+<div id="pg-app" class="app hidden">
+  <!-- Floating orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+  <div class="orb orb-5"></div>
+
+  <aside class="sidebar">
+    <div class="side-h"><div class="logo-icon">智</div><h2>智教通</h2></div>
+    <nav class="side-nav" id="side-nav"></nav>
+    <div class="side-foot" onclick="doLogout()">
+      <div class="av" id="side-av">U</div><div style="flex:1;min-width:0;"><div style="font-size:12px;" id="side-name">用户</div><div style="font-size:10px;color:rgba(255,255,255,0.4);" id="side-role">角色</div></div>
+      <span style="color:rgba(255,255,255,0.35);font-size:14px;">&#10140;</span>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="header"><div class="bc" id="bc">&#127968; 工作台</div>
+      <div class="ha">
+        <div class="badge" onclick="navTo('notifications')" title="通知">&#128276;<div class="dot"></div></div>
+        <span style="font-size:12px;color:var(--text-secondary);" id="clock"></span>
+      </div>
+    </header>
+    <div class="content" id="content"></div>
+  </main>
+</div>
+
+<!-- ═══════════════ MODALS ═══════════════ -->
+<div class="modal" id="modal-generic"><div class="modal-box">
+  <div class="modal-h"><h3 id="modal-title">标题</h3><button class="modal-close" onclick="closeModal()">&#10005;</button></div>
+  <div class="modal-b" id="modal-body"></div>
+  <div class="modal-f" id="modal-foot"></div>
+</div></div>
+
+<script>
+// ─── GLOBAL STATE ───
+const S={role:'student',page:'dashboard',user:{name:'张明远',dept:'计算机科学与技术学院'},course:null,timer:null};
+
+// ─── MOCK DATA ───
+const M={
+courses:[{id:1,code:'CS101',name:'数据结构与算法',credit:4,hrs:64,type:'必修',cat:'工学/计算机',dept:'计算机科学与技术学院',teacher:'赵教授',rating:4.8,cap:80,enr:67,time:'周一1-2节,周三3-4节',loc:'教学楼A-301',tags:['核心课程'],pre:'程序设计基础',desc:'系统讲授线性表、树、图等数据结构及其算法设计与分析。'},
+{id:2,code:'CS201',name:'操作系统',credit:3,hrs:48,type:'必修',cat:'工学/计算机',dept:'计算机科学与技术学院',teacher:'钱副教授',rating:4.5,cap:60,enr:58,time:'周二5-6节,周四1-2节',loc:'实验楼B-201',tags:['核心课程'],pre:'计算机组成原理',desc:'介绍操作系统基本原理与设计方法。'},
+{id:3,code:'CS301',name:'人工智能导论',credit:3,hrs:48,type:'专业选修',cat:'工学/计算机',dept:'计算机科学与技术学院',teacher:'赵教授',rating:4.9,cap:100,enr:100,time:'周一7-8节,周三7-8节',loc:'教学楼C-501',tags:['热门','校企合作'],pre:'',desc:'全面介绍人工智能核心理论与方法。'},
+{id:4,code:'MATH201',name:'概率论与数理统计',credit:3,hrs:48,type:'必修',cat:'理学/数学',dept:'数学与统计学院',teacher:'钱副教授',rating:4.3,cap:90,enr:45,time:'周三1-2节,周五3-4节',loc:'教学楼B-102',tags:[],pre:'高等数学',desc:'讲授概率论基础与数理统计方法。'},
+{id:5,code:'EN101',name:'大学英语(三)',credit:2,hrs:32,type:'必修',cat:'语言与文学',dept:'外国语学院',teacher:'孙讲师',rating:4.2,cap:50,enr:32,time:'周二3-4节',loc:'外语楼D-201',tags:[],pre:'大学英语(二)',desc:'提升英语综合应用能力。'},
+{id:6,code:'PE101',name:'篮球',credit:1,hrs:32,type:'体育',cat:'体育与健康',dept:'体育部',teacher:'周教练',rating:4.6,cap:40,enr:38,time:'周四7-8节',loc:'体育馆-篮球场',tags:['热门'],pre:'',desc:'学习篮球基本技术与战术配合。'},
+{id:7,code:'CS401',name:'软件工程',credit:3,hrs:48,type:'专业选修',cat:'工学/计算机',dept:'计算机科学与技术学院',teacher:'赵教授',rating:4.4,cap:80,enr:42,time:'周五1-2节,周五5-6节',loc:'教学楼A-201',tags:['创新创业'],pre:'程序设计基础',desc:'介绍软件工程概念与项目管理方法。'},
+{id:8,code:'HIST101',name:'中国近现代史纲要',credit:2,hrs:32,type:'通识选修',cat:'人文与社会',dept:'马克思主义学院',teacher:'吴副教授',rating:4.1,cap:120,enr:75,time:'周三5-6节',loc:'教学楼A-101',tags:[],pre:'',desc:'介绍中国近现代史发展脉络。'}],
+enroll:[{cid:1,r:1,s:'已选中',t:'2026-06-15 10:23'},{cid:2,r:2,s:'已选中',t:'2026-06-20 14:05'},{cid:4,r:1,s:'已选中',t:'2026-06-15 10:25'},{cid:5,r:2,s:'已选中',t:'2026-06-20 14:10'},{cid:6,r:2,s:'待抽签',t:'2026-06-20 14:08'}],
+scores:[{sem:'2025-2026-1',cn:'数据结构与算法',t:'赵教授',s:92,g:4.0,ty:'正常'},{sem:'2025-2026-1',cn:'操作系统',t:'钱副教授',s:85,g:3.3,ty:'正常'},{sem:'2025-2026-1',cn:'高等数学(二)',t:'李教授',s:78,g:2.7,ty:'正常'},{sem:'2024-2025-2',cn:'程序设计基础',t:'王副教授',s:95,g:4.0,ty:'正常'},{sem:'2024-2025-2',cn:'大学物理(一)',t:'刘教授',s:72,g:2.3,ty:'补考'}],
+exams:[{id:1,name:'数据结构期中',course:'数据结构与算法',type:'期中',st:'2026-07-15 09:00',dur:120,status:'未开始',total:100,pass:60},{id:2,name:'操作系统模拟',course:'操作系统',type:'模拟',st:'2026-07-08 14:00',dur:90,status:'未开始',total:100,pass:60},{id:3,name:'高数单元测试',course:'高等数学(二)',type:'单元测',st:'2026-06-25 10:00',dur:60,status:'已结束',total:50,pass:30,ms:42}],
+questions:[{id:1,type:'单选题',content:'以下哪种数据结构具有"后进先出"的特点？',subj:'数据结构',kp:'栈与队列',diff:0.3,opts:['A. 队列','B. 栈','C. 链表','D. 树'],ans:'B'},
+{id:2,type:'单选题',content:'二叉搜索树中序遍历结果是？',subj:'数据结构',kp:'树与二叉树',diff:0.5,opts:['A. 无序','B. 降序','C. 升序','D. 不确定'],ans:'C'},
+{id:3,type:'判断题',content:'哈希表查找平均时间复杂度为O(1)。',subj:'数据结构',kp:'哈希表',diff:0.2,opts:['正确','错误'],ans:'正确'},
+{id:4,type:'多选题',content:'哪些属于进程调度算法？',subj:'操作系统',kp:'进程调度',diff:0.4,opts:['A. FCFS','B. SJF','C. LRU','D. Round Robin','E. SSTF'],ans:'A,B,D'},
+{id:5,type:'填空题',content:'Java中GC通过____算法判断对象可达。',subj:'程序设计',kp:'JVM',diff:0.6,ans:'可达性分析'}],
+users:[{un:'2024001001',name:'张明远',role:'学生',dept:'计算机学院',status:1,ll:'2026-07-06 10:30'},{un:'2024001002',name:'李思雨',role:'学生',dept:'计算机学院',status:1,ll:'2026-07-06 09:15'},{un:'T2020001',name:'赵教授',role:'教师',dept:'计算机学院',status:1,ll:'2026-07-05 16:20'},{un:'T2020002',name:'钱副教授',role:'教师',dept:'数统学院',status:1,ll:'2026-07-06 08:45'},{un:'2023005010',name:'陈小龙',role:'学生',dept:'计算机学院',status:0,ll:'2026-05-20 14:00'}],
+roles:[{id:1,name:'超级管理员',code:'super_admin',users:2,desc:'系统最高权限'},{id:2,name:'教务人员',code:'academic_staff',users:8,desc:'排课、审核、考试管理'},{id:3,name:'教师',code:'teacher',users:45,desc:'成绩录入、题库管理'},{id:4,name:'学生',code:'student',users:5120,desc:'选课、考试、自测'}],
+menus:[{id:1,label:'工作台',icon:'home',path:'/dashboard',sort:1,visible:1,children:[]},
+{id:2,label:'课程管理',icon:'book',path:'',sort:2,visible:1,children:[
+  {id:21,label:'课程广场',icon:'',path:'/courses',sort:1,visible:1,children:[]},
+  {id:22,label:'我的课表',icon:'',path:'/schedule',sort:2,visible:1,children:[]},
+  {id:23,label:'我的选课',icon:'',path:'/enrollments',sort:3,visible:1,children:[]},
+]},
+{id:3,label:'系统管理',icon:'settings',path:'',sort:99,visible:1,children:[
+  {id:31,label:'用户管理',icon:'',path:'/admin/users',sort:1,visible:1,children:[]},
+  {id:32,label:'角色管理',icon:'',path:'/admin/roles',sort:2,visible:1,children:[]},
+  {id:33,label:'菜单管理',icon:'',path:'/admin/menus',sort:3,visible:1,children:[]},
+]}],
+settings:[{key:'enrollment_switch',name:'选课总开关',val:'true',type:'boolean'},{key:'max_courses_per_round',name:'单轮选课上限',val:'5',type:'number'},{key:'credit_warning_threshold',name:'学分预警阈值',val:'0.7',type:'number'},{key:'gpa_warning_threshold',name:'GPA预警阈值',val:'2.0',type:'number'},{key:'exam_cheat_detect',name:'考试防作弊',val:'true',type:'boolean'},{key:'rate_limit_ip',name:'IP限流(次/分)',val:'60',type:'number'}],
+logs:[{id:1,uid:'admin',module:'用户管理',action:'新增用户',target:'2024001050',status:200,cost:45,ip:'10.0.0.1',time:'2026-07-06 10:30:15'},
+{id:2,uid:'T2020001',module:'题库管理',action:'修改试题',target:'Q-1001',status:200,cost:23,ip:'10.0.0.25',time:'2026-07-06 10:28:42'},
+{id:3,uid:'2024001001',module:'选课',action:'选课',target:'CS201',status:200,cost:156,ip:'10.0.0.100',time:'2026-07-06 10:25:18'},
+{id:4,uid:'2024001002',module:'选课',action:'选课',target:'CS301',status:10001,cost:89,ip:'10.0.0.101',time:'2026-07-06 10:25:18'}],
+notifications:[{id:1,title:'选课提醒',content:'二轮补退选将于7月10日17:00截止',type:'选课',ch:'站内信',time:'2026-07-06 09:00',read:0},
+{id:2,title:'考试通知',content:'数据结构期中考试将于7月15日进行',type:'考试',ch:'站内信',time:'2026-07-05 14:00',read:0},
+{id:3,title:'成绩发布',content:'高等数学(二)成绩已发布',type:'成绩',ch:'站内信',time:'2026-07-04 10:00',read:1}],
+approvals:[{id:1,code:'CS501',name:'云计算与大数据',teacher:'赵教授',credit:3,type:'专业选修',time:'2026-07-01',stage:'院系初审'},
+{id:2,code:'CS502',name:'深度学习实践',teacher:'钱副教授',credit:4,type:'专业选修',time:'2026-07-02',stage:'院系初审'},
+{id:3,code:'MATH301',name:'离散数学进阶',teacher:'钱副教授',credit:3,type:'专业选修',time:'2026-06-28',stage:'教务处终审'}],
+wrongQs:[{id:1,q:'哪种数据结构LIFO？',subj:'数据结构',kp:'栈与队列',wrong:'队列',correct:'栈',cnt:3,status:'未掌握'},
+{id:2,q:'二叉搜索树中序遍历？',subj:'数据结构',kp:'树与二叉树',wrong:'降序',correct:'升序',cnt:1,status:'已掌握'},
+{id:3,q:'进程调度算法有哪些？',subj:'操作系统',kp:'进程调度',wrong:'ABD',correct:'ABD',cnt:2,status:'未掌握'}],
+kpMastery:[{kp:'栈与队列',v:0.45},{kp:'树与二叉树',v:0.78},{kp:'哈希表',v:0.92},{kp:'进程调度',v:0.55},{kp:'排序算法',v:0.68},{kp:'图论',v:0.32}],
+};
+
+// ─── TIME ───
+function tick(){const d=new Date();document.getElementById('clock').textContent=d.toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'})+' '+d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});}
+setInterval(tick,30000);tick();
+
+// ─── LOGIN ───
+document.querySelectorAll('#role-sel .role-btn').forEach(b=>{b.onclick=function(){document.querySelectorAll('#role-sel .role-btn').forEach(x=>x.classList.remove('active'));this.classList.add('active');S.role=this.dataset.r;}});
+function doLogin(){const u=document.getElementById('lu').value;S.user.name=S.role==='student'?'张明远':S.role==='teacher'?'赵教授':S.role==='academic'?'王教务':S.role==='admin'?'系统管理员':'题库管理员';
+S.user.role=S.role;S.user.dept='计算机科学与技术学院';
+document.getElementById('pg-login').classList.add('hidden');document.getElementById('pg-app').classList.remove('hidden');
+document.getElementById('side-av').textContent=S.user.name[0];document.getElementById('side-name').textContent=S.user.name;
+document.getElementById('side-role').textContent={student:'学生',teacher:'教师',academic:'教务人员',admin:'系统管理员',qb_admin:'题库管理员'}[S.role];
+buildSidebar();navTo('dashboard');}
+function doLogout(){document.getElementById('pg-app').classList.add('hidden');document.getElementById('pg-login').classList.remove('hidden');}
+
+// ─── SIDEBAR ───
+function buildSidebar(){
+  const m={student:[
+    {sec:'主菜单'},{id:'dashboard',icon:'&#127968;',label:'工作台'},{id:'course-market',icon:'&#128218;',label:'课程广场'},
+    {id:'my-schedule',icon:'&#128197;',label:'我的课表'},{id:'my-enrollments',icon:'&#128203;',label:'我的选课'},
+    {sec:'学习'},{id:'my-scores',icon:'&#128202;',label:'我的成绩'},{id:'exam-center',icon:'&#128221;',label:'考试中心'},
+    {id:'student-profile',icon:'&#127912;',label:'能力画像'},{id:'wrong-questions',icon:'&#128220;',label:'错题本'},
+    {id:'course-recommend',icon:'&#11088;',label:'课程推荐'},{id:'academic-progress',icon:'&#128200;',label:'学业进度'},
+    {sec:'AI'},{id:'ai-exam-gen',icon:'&#129302;',label:'AI智能出卷'},
+    {sec:'多端'},{id:'mini-program',icon:'&#128241;',label:'小程序预览'},
+  ],teacher:[
+    {sec:'主菜单'},{id:'dashboard',icon:'&#127968;',label:'工作台'},{id:'teacher-schedule',icon:'&#128197;',label:'我的课表'},
+    {sec:'教学管理'},{id:'score-entry',icon:'&#128202;',label:'成绩录入'},{id:'question-bank',icon:'&#128214;',label:'题库管理'},
+    {id:'course-apply',icon:'&#128196;',label:'课程申报'},
+  ],academic:[
+    {sec:'主菜单'},{id:'dashboard',icon:'&#127968;',label:'工作台'},
+    {sec:'教务管理'},{id:'schedule-mgmt',icon:'&#128197;',label:'排课管理'},{id:'exam-mgmt',icon:'&#128221;',label:'考试管理'},
+    {id:'score-review',icon:'&#128203;',label:'成绩审核'},{id:'evaluation-config',icon:'&#128172;',label:'教学评价'},
+    {id:'enrollment-monitor',icon:'&#128064;',label:'选课监控'},{id:'round-config',icon:'&#9881;',label:'选课轮次'},
+    {id:'training-plan',icon:'&#127891;',label:'培养方案'},{id:'student-import',icon:'&#128229;',label:'新生导入'},
+  ],admin:[
+    {sec:'主菜单'},{id:'dashboard',icon:'&#127968;',label:'工作台'},
+    {sec:'系统管理'},{id:'user-mgmt',icon:'&#128101;',label:'用户管理'},{id:'role-mgmt',icon:'&#127981;',label:'角色管理'},
+    {id:'menu-mgmt',icon:'&#128450;',label:'菜单管理'},{id:'system-config',icon:'&#128736;',label:'系统配置'},
+    {id:'audit-log',icon:'&#128269;',label:'操作日志'},{id:'sys-monitor',icon:'&#128225;',label:'系统监控'},
+    {sec:'数据分析'},{id:'data-dashboard',icon:'&#128200;',label:'数据看板'},
+  ],qb_admin:[
+    {sec:'主菜单'},{id:'dashboard',icon:'&#127968;',label:'工作台'},
+    {sec:'题库管理'},{id:'question-bank',icon:'&#128214;',label:'题库管理'},{id:'knowledge-graph',icon:'&#129504;',label:'知识图谱'},
+  ]};
+  const items=m[S.role]||[];
+  document.getElementById('side-nav').innerHTML=items.map(i=>i.sec?`<div class="side-sec">${i.sec}</div>`:
+    `<div class="side-item${S.page===i.id?' active':''}" data-p="${i.id}" onclick="navTo('${i.id}')"><div class="side-icon">${i.icon}</div><div class="side-label">${i.label}</div><div class="side-arrow">&#8250;</div></div>`).join('');
+}
+
+// ─── NAVIGATION ───
+function navTo(p){
+  S.page=p;
+  document.querySelectorAll('.side-item').forEach(e=>e.classList.toggle('active',e.dataset.p===p));
+  const bm={dashboard:'&#127968; 工作台','course-market':'&#128218; 课程广场','my-schedule':'&#128197; 我的课表',
+    'my-enrollments':'&#128203; 我的选课','my-scores':'&#128202; 我的成绩','exam-center':'&#128221; 考试中心',
+    'student-profile':'&#127912; 能力画像','wrong-questions':'&#128220; 错题本','course-recommend':'&#11088; 课程推荐',
+    'academic-progress':'&#128200; 学业进度','score-entry':'&#128202; 成绩录入','question-bank':'&#128214; 题库管理',
+    'course-apply':'&#128196; 课程申报','teacher-schedule':'&#128197; 教师课表','user-mgmt':'&#128101; 用户管理',
+    'role-mgmt':'&#127981; 角色管理','menu-mgmt':'&#128450; 菜单管理','system-config':'&#128736; 系统配置',
+    'audit-log':'&#128269; 操作日志','sys-monitor':'&#128225; 系统监控','schedule-mgmt':'&#128197; 排课管理',
+    'exam-mgmt':'&#128221; 考试管理','score-review':'&#128203; 成绩审核','evaluation-config':'&#128172; 教学评价',
+    'enrollment-monitor':'&#128064; 选课监控','round-config':'&#9881; 选课轮次配置','training-plan':'&#127891; 培养方案管理',
+    'student-import':'&#128229; 新生导入','notifications':'&#128276; 通知中心','settings':'&#128100; 个人设置',
+    'knowledge-graph':'&#129504; 知识图谱','data-dashboard':'&#128200; 数据看板','ai-exam-gen':'&#129302; AI智能出卷',
+    'mini-program':'&#128241; 小程序预览'};
+  document.getElementById('bc').innerHTML=bm[p]||p;
+  document.getElementById('content').innerHTML=(R[p]||R.dashboard)();
+  if(p==='exam-center')initExam();
+}
+const R={};
+
+// ═══════════════ PAGE RENDERERS ═══════════════
+
+function statsRow(items){return `<div class="stats">${items.map(i=>`<div class="stat-card"><div class="stat-icon ${i.cls||'purple'}">${i.icon}</div><div><div class="stat-val">${i.val}</div><div class="stat-lbl">${i.lbl}</div></div></div>`).join('')}</div>`;}
+function card(h,b){return `<div class="glass"><div class="flex-between mb16"><span style="font-weight:600;">${h}</span>${b||''}</div>`;}
+function ecard(){return '</div>';}
+
+// ─── STUDENT DASHBOARD ───
+R.dashboard=()=>{
+  if(S.role==='student')return statsRow([{icon:'&#128218;',val:'4',lbl:'已选课程',cls:'purple'},{icon:'&#9989;',val:'13',lbl:'已获学分',cls:'green'},{icon:'&#128202;',val:'3.62',lbl:'平均绩点',cls:'orange'},{icon:'&#9200;',val:'2',lbl:'即将考试',cls:'blue'}])+
+    '<div class="alert alert-warn">&#9888; 二轮补退选进行中 截止：2026-07-10 17:00</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">'+card('&#128203; 我的课程','<a href="#" onclick="navTo(\'my-schedule\');return false;" style="font-size:12px;">课表 &rarr;</a>')+
+    M.enroll.filter(e=>e.s==='已选中').map(e=>{const c=M.courses.find(x=>x.id===e.cid);return c?`<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;"><div><strong>${c.name}</strong><br><span class="text-sec">${c.teacher} | ${c.time}</span></div><span class="tag tag-purple">${c.type}</span></div>`:'';}).join('')+ecard()+
+    card('&#128221; 近期考试','<a href="#" onclick="navTo(\'exam-center\');return false;" style="font-size:12px;">全部 &rarr;</a>')+
+    M.exams.filter(e=>e.status==='未开始').slice(0,3).map(e=>`<div style="padding:10px 0;border-bottom:1px solid var(--border);"><strong>${e.name}</strong><div class="text-sec mt4">${e.course} | ${e.st} | ${e.dur}分钟</div></div>`).join('')+ecard()+'</div>';
+
+  if(S.role==='teacher')return statsRow([{icon:'&#128218;',val:'3',lbl:'授课课程',cls:'purple'},{icon:'&#127891;',val:'189',lbl:'学生总数',cls:'green'},{icon:'&#11088;',val:'4.7',lbl:'教学评分',cls:'orange'},{icon:'&#128221;',val:'156',lbl:'题库试题',cls:'blue'}])+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">'+card('我的课程','')+
+    [{n:'数据结构与算法',t:'周一1-2节,周三3-4节',e:'67/80',s:'进行中'},{n:'人工智能导论',t:'周一7-8节,周三7-8节',e:'100/100',s:'已满'},{n:'软件工程',t:'周五1-2节,5-6节',e:'42/80',s:'进行中'}].map(c=>`<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;"><div><strong>${c.n}</strong><br><span class="text-sec">${c.t} | ${c.e}人</span></div><span class="tag ${c.s==='已满'?'tag-orange':'tag-green'}">${c.s}</span></div>`).join('')+ecard()+
+    card('待办事项','')+'<div style="padding:8px 0;border-bottom:1px solid var(--border);">&#128202; 数据结构 — 成绩待录入 <span class="tag tag-orange" style="float:right;">待处理</span></div><div style="padding:8px 0;border-bottom:1px solid var(--border);">&#128202; 软件工程 — 成绩待录入 <span class="tag tag-orange" style="float:right;">待处理</span></div><div style="padding:8px 0;">&#128196; 云计算与大数据 — 审核中 <span class="tag tag-purple" style="float:right;">审核中</span></div>'+ecard()+'</div>';
+
+  if(S.role==='academic')return statsRow([{icon:'&#128218;',val:'48',lbl:'开设课程',cls:'purple'},{icon:'&#127891;',val:'5,230',lbl:'学生总数',cls:'green'},{icon:'&#128221;',val:'8',lbl:'待审核课程',cls:'orange'},{icon:'&#9881;',val:'3',lbl:'进行中轮次',cls:'blue'}])+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">'+card('待办事项','')+'<div style="padding:8px 0;border-bottom:1px solid var(--border);">&#9989; 3门课程待审核 <span class="tag tag-orange" style="float:right;">待处理</span></div><div style="padding:8px 0;border-bottom:1px solid var(--border);">&#128203; 12份成绩待审核 <span class="tag tag-orange" style="float:right;">待处理</span></div><div style="padding:8px 0;">&#128197; 下学期排课待启动</div>'+ecard()+card('快捷入口','')+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'+['schedule-mgmt','exam-mgmt','enrollment-monitor','round-config'].map(p=>`<div class="glass" style="padding:12px;text-align:center;cursor:pointer;" onclick="navTo('${p}')"><div style="font-size:24px;margin-bottom:4px;">${{'schedule-mgmt':'&#128197;','exam-mgmt':'&#128221;','enrollment-monitor':'&#128064;','round-config':'&#9881;'}[p]}</div><div style="font-size:12px;">${{'schedule-mgmt':'排课管理','exam-mgmt':'考试管理','enrollment-monitor':'选课监控','round-config':'轮次配置'}[p]}</div></div>`).join('')+'</div>'+ecard()+'</div>';
+
+  return statsRow([{icon:'&#128101;',val:'5,230',lbl:'总用户',cls:'purple'},{icon:'&#128218;',val:'48',lbl:'课程',cls:'green'},{icon:'&#9889;',val:'856',lbl:'QPS',cls:'orange'},{icon:'&#9989;',val:'3',lbl:'待审核',cls:'blue'}])+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">'+card('选课热度','')+[{n:'人工智能导论',e:'100/100',t:'已满'},{n:'数据结构',e:'67/80',t:'热门'},{n:'篮球',e:'38/40',t:'热门'},{n:'近现代史纲要',e:'75/120',t:''},{n:'软件工程',e:'42/80',t:''}].map((c,i)=>`<div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;"><strong>${i+1}.</strong> ${c.n} <span>${c.e} ${c.t?`<span class="tag tag-${c.t==='已满'?'red':'orange'}">${c.t}</span>`:''}</span></div>`).join('')+ecard()+card('系统状态','')+'<div class="alert alert-info" style="margin-bottom:12px;">&#9989; 所有服务正常</div><div class="text-sec" style="margin:4px 0;">MySQL 连接: 45/200</div><div class="text-sec" style="margin:4px 0;">Redis 内存: 35%</div><div class="text-sec" style="margin:4px 0;">MQ 积压: 0</div>'+ecard()+'</div>';
+};
+
+// ─── COURSE MARKET ───
+R['course-market']=()=>'<div class="alert alert-info">&#128227; 当前：二轮补退选（抢课制）| 2026-07-01 ~ 2026-07-10</div>'+card('课程广场','<span class="text-sec">共 '+M.courses.length+' 门</span>')+
+  '<div class="filters"><select class="select" onchange="filterC()" id="ft"><option value="">全部类型</option><option>必修</option><option>专业选修</option><option>通识选修</option><option>体育</option></select><select class="select" onchange="filterC()" id="fc"><option value="">全部分类</option><option>工学/计算机</option><option>理学/数学</option><option>语言与文学</option><option>体育与健康</option><option>人文与社会</option></select><select class="select" onchange="filterC()" id="fcap"><option value="">名额状态</option><option value="has">有名额</option><option value="full">已满</option></select><input class="input" placeholder="&#128269; 搜索..." oninput="filterC()" id="fs" style="width:200px;"></div>'+
+  '<div class="c-grid" id="cg">'+rc(M.courses)+'</div>'+ecard();
+
+function rc(cs){return cs.map(c=>{const f=c.enr>=c.cap,m=M.enroll.some(e=>e.cid===c.id);return`<div class="c-card" onclick="showCD(${c.id})"><div class="cc-h"><div class="cc-t">${c.name}</div><div class="flex-row gap4">${c.tags.slice(0,2).map(t=>`<span class="tag tag-purple">${t}</span>`).join('')}</div></div><div class="cc-m">${c.code} | ${c.credit}学分 | ${c.hrs}学时</div><div class="cc-m">&#128100; ${c.teacher} &#11088;${c.rating} | &#128339; ${c.time}</div><div class="cc-m">&#128205; ${c.loc}</div><div class="cc-f"><span style="font-size:12px;${f?'color:var(--danger);':''}">${f?'已满':'剩余 <strong>'+ (c.cap-c.enr)+'</strong>/'+c.cap+' 名额'}${c.pre?` | 先修: <span style="color:var(--warning);">${c.pre}</span>`:''}</span><span class="tag ${c.type==='必修'?'tag-green':c.type==='体育'?'tag-orange':'tag-purple'}">${c.type}</span></div></div>`;}).join('');}
+function filterC(){let cs=M.courses;const t=document.getElementById('ft')?.value,c=document.getElementById('fc')?.value,cap=document.getElementById('fcap')?.value,s=document.getElementById('fs')?.value?.toLowerCase();if(t)cs=cs.filter(x=>x.type===t);if(c)cs=cs.filter(x=>x.cat===c);if(cap==='has')cs=cs.filter(x=>x.enr<x.cap);if(cap==='full')cs=cs.filter(x=>x.enr>=x.cap);if(s)cs=cs.filter(x=>x.name.toLowerCase().includes(s)||x.teacher.toLowerCase().includes(s));document.getElementById('cg').innerHTML=rc(cs);}
+function showCD(id){const c=M.courses.find(x=>x.id===id);if(!c)return;S.course=c;document.getElementById('modal-title').textContent=c.name;
+document.getElementById('modal-body').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;"><div><strong>编码：</strong>${c.code}</div><div><strong>学分/学时：</strong>${c.credit}/${c.hrs}</div><div><strong>类型：</strong><span class="tag tag-purple">${c.type}</span></div><div><strong>分类：</strong>${c.cat}</div><div><strong>教师：</strong>${c.teacher} &#11088;${c.rating}</div><div><strong>院系：</strong>${c.dept}</div><div><strong>时间：</strong>${c.time}</div><div><strong>地点：</strong>${c.loc}</div><div><strong>容量：</strong>${c.enr>=c.cap?'<span style="color:var(--danger);">已满</span>':c.enr+'/'+c.cap}</div><div><strong>先修：</strong>${c.pre||'无'}</div></div><div style="padding:12px;background:var(--brand-50);border-radius:10px;margin-bottom:12px;"><strong>课程简介</strong><p class="text-sec mt4" style="line-height:1.6;">${c.desc}</p></div>`;
+const ae=M.enroll.some(e=>e.cid===c.id);
+document.getElementById('modal-foot').innerHTML=`<button class="btn btn-outline btn-sm" onclick="closeModal()">关闭</button><button class="btn btn-primary btn-sm" ${c.enr>=c.cap||ae?'disabled':''} onclick="doEnroll()">${c.enr>=c.cap?'已满':ae?'已选课':'立即选课'}</button>`;
+document.getElementById('modal-generic').classList.add('show');}
+function doEnroll(){if(!S.course)return;S.course.enr++;M.enroll.push({cid:S.course.id,r:2,s:'已选中',t:new Date().toLocaleString('zh-CN')});closeModal();alert('选课成功！\n'+S.course.name+'\n剩余：'+(S.course.cap-S.course.enr)+'/'+S.course.cap);navTo(S.page);}
+function closeModal(){document.getElementById('modal-generic').classList.remove('show');}
+
+// ─── MY SCHEDULE ───
+R['my-schedule']=()=>card('我的课表 — 2025-2026-2','<div class="flex-row gap8"><button class="btn btn-outline btn-sm">&#128247; 导出图片</button><button class="btn btn-outline btn-sm">&#128197; 导出iCal</button></div>')+
+  '<div class="sched"><div class="sched-h">节次</div>'+'一二三四五六日'.split('').map(d=>`<div class="sched-h">周${d}</div>`).join('')+
+  (function(){let r='';const ps=[['1-2','08:00-09:40'],['3-4','10:00-11:40'],['5-6','14:00-15:40'],['7-8','16:00-17:40'],['9-10','19:00-20:40']];
+  const sm={};[{c:{id:1,name:'数据结构',type:''},t:'周一,1-2'},{c:{id:2,name:'操作系统',type:'green'},t:'周二,5-6|周四,1-2'},{c:{id:4,name:'概率论',type:'orange'},t:'周三,1-2|周五,3-4'},{c:{id:5,name:'大学英语',type:'purple'},t:'周二,3-4'}].forEach(({c,t})=>{t.split('|').forEach(p=>{const[d,per]=p.split(',');const di='一二三四五六日'.indexOf(d);const psi=Math.ceil(parseInt(per.split('-')[0])/2)-1;const k=psi+'-'+di;if(!sm[k])sm[k]=[];sm[k].push(c);});});
+  for(let ri=0;ri<5;ri++){r+=`<div class="sched-t">${ps[ri][0]}节<br>${ps[ri][1]}</div>`;for(let d=0;d<7;d++){const k=ri+'-'+d;const cs=sm[k]||[];r+=`<div class="sched-c">${cs.map(c=>`<div class="sched-item ${c.type}">${c.name}</div>`).join('')}</div>`;}}return r;})()+'</div>'+ecard();
+
+// ─── MY ENROLLMENTS ───
+R['my-enrollments']=()=>card('我的选课','')+'<table class="tbl"><thead><tr><th>编码</th><th>课程</th><th>类型</th><th>学分</th><th>教师</th><th>时间</th><th>状态</th><th>操作时间</th><th>操作</th></tr></thead><tbody>'+M.enroll.map(e=>{const c=M.courses.find(x=>x.id===e.cid);return c?`<tr><td>${c.code}</td><td><strong>${c.name}</strong></td><td><span class="tag tag-purple">${c.type}</span></td><td>${c.credit}</td><td>${c.teacher}</td><td style="font-size:11px;">${c.time}</td><td>${e.s==='已选中'?'<span class="tag tag-green">已选中</span>':'<span class="tag tag-orange">待抽签</span>'}</td><td style="font-size:11px;">${e.t}</td><td>${e.s==='已选中'?`<button class="btn btn-danger btn-xs" onclick="if(confirm('确认退选${c.name}？')){M.enroll.splice(M.enroll.findIndex(x=>x.cid===${c.id}),1);c.enr--;navTo('my-enrollments');}">退课</button>`:'-'}</td></tr>`:'';}).join('')+'</tbody></table>'+ecard();
+
+// ─── MY SCORES ───
+R['my-scores']=()=>{const g=(M.scores.reduce((s,x)=>s+x.g,0)/M.scores.length).toFixed(2);return statsRow([{icon:'&#128202;',val:g,lbl:'平均绩点',cls:'purple'},{icon:'&#9989;',val:'4',lbl:'通过',cls:'green'},{icon:'&#128200;',val:'92',lbl:'最高分',cls:'orange'},{icon:'&#127942;',val:'72',lbl:'最低分',cls:'blue'}])+
+  card('成绩明细','<button class="btn btn-outline btn-sm">&#128229; 下载成绩单</button>')+'<table class="tbl"><thead><tr><th>学期</th><th>课程</th><th>教师</th><th>成绩</th><th>绩点</th><th>类型</th></tr></thead><tbody>'+M.scores.map(s=>`<tr><td>${s.sem}</td><td><strong>${s.cn}</strong></td><td>${s.t}</td><td><strong style="color:${s.s>=90?'var(--success)':s.s>=70?'var(--warning)':'var(--danger)'}">${s.s}</strong></td><td>${s.g.toFixed(1)}</td><td>${s.ty==='补考'?'<span class="tag tag-orange">补考</span>':'<span class="tag tag-green">正常</span>'}</td></tr>`).join('')+'</tbody></table>'+ecard();};
+
+// ─── EXAM CENTER ───
+R['exam-center']=()=>'<div class="tabs"><div class="tab active" onclick="swTab(event,\'up\')">即将开始</div><div class="tab" onclick="swTab(event,\'hi\')">历史</div><div class="tab" onclick="swTab(event,\'st\')">自主自测</div></div><div id="et-up"><div class="glass">'+card('即将开始的考试','')+'<table class="tbl"><thead><tr><th>名称</th><th>课程</th><th>类型</th><th>开始时间</th><th>时长</th><th>操作</th></tr></thead><tbody>'+M.exams.filter(e=>e.status==='未开始').map(e=>`<tr><td><strong>${e.name}</strong></td><td>${e.course}</td><td><span class="tag tag-purple">${e.type}</span></td><td>${e.st}</td><td>${e.dur}分钟</td><td><button class="btn btn-primary btn-xs" onclick="startExam(${e.id})">进入考试</button></td></tr>`).join('')+'</tbody></table>'+ecard()+'</div></div><div id="et-hi" class="hidden"><div class="glass">'+card('历史考试','')+'<table class="tbl"><thead><tr><th>名称</th><th>课程</th><th>得分</th></tr></thead><tbody>'+M.exams.filter(e=>e.status==='已结束').map(e=>`<tr><td><strong>${e.name}</strong></td><td>${e.course}</td><td><strong style="color:var(--success)">${e.ms}/${e.total}</strong></td></tr>`).join('')+'</tbody></table>'+ecard()+'</div></div><div id="et-st" class="hidden"><div class="glass" style="max-width:500px;">'+card('自主自测（智能出卷）','')+'<p class="text-sec mb16">选择模式，系统根据你的能力画像生成个性化试卷。</p><div class="form-grid"><div class="fg"><label>组卷模式</label><select class="select w-full"><option>短板聚焦</option><option>均衡覆盖</option><option>难度自适应</option><option>错题重练</option><option>综合诊断</option><option>AI智能</option></select></div><div class="fg"><label>科目</label><select class="select w-full"><option>全部</option><option>数据结构</option><option>操作系统</option></select></div><div class="fg"><label>题量</label><input class="input w-full" type="number" value="20"></div><div class="fg"><label>难度</label><select class="select w-full"><option>自适应</option><option>偏易</option><option>适中</option><option>偏难</option></select></div></div><button class="btn btn-primary mt16">&#129504; 开始智能出卷</button>'+ecard()+'</div></div>';
+function swTab(e,t){e.target.parentElement.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');['up','hi','st'].forEach(x=>{const el=document.getElementById('et-'+x);if(el)el.classList.toggle('hidden',x!==t);});}
+function initExam(){}
+function startExam(id){const e=M.exams.find(x=>x.id===id);if(!e)return;const qs=M.questions.slice(0,5);document.getElementById('content').innerHTML=
+  `<div style="display:flex;min-height:calc(100vh-160px);"><div style="width:180px;background:var(--surface);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin-right:20px;"><div class="text-sec mb16">答题卡</div>${qs.map((q,i)=>`<div class="tree-node" onclick="jumpQ(${i})" id="qi-${i}" style="color:var(--brand-500);font-weight:500;">${i+1}. ${q.type}</div>`).join('')}<button class="btn btn-danger btn-sm w-full mt16" onclick="if(confirm('确认交卷？')){clearInterval(S.timer);navTo('exam-center');}">交卷</button></div><div style="flex:1;"><div class="flex-between mb16"><h2 style="font-size:16px;">${e.name}</h2><div style="padding:6px 16px;background:#fee2e2;color:var(--danger);border-radius:20px;font-weight:600;font-size:13px;">&#9200; <span id="cdown">${e.dur}:00</span></div></div>${qs.map((q,i)=>`<div class="glass exam-q" id="eq-${i}" style="${i>0?'display:none':''};"><div class="flex-between mb16"><span style="font-weight:600;">第 ${i+1} 题 — ${q.type}</span><span class="text-sec">${q.kp}</span></div><p style="line-height:1.8;margin-bottom:14px;">${q.content}</p><div style="display:flex;flex-direction:column;gap:8px;">${q.opts.map(o=>`<label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;cursor:pointer;"><input type="${q.type==='多选题'?'checkbox':'radio'}" name="q${i}" value="${o[0]}"> ${o}</label>`).join('')}</div><div class="flex-between mt16"><button class="btn btn-outline btn-sm" ${i===0?'disabled':''} onclick="jumpQ(${i-1})">&larr; 上一题</button><button class="btn btn-primary btn-sm" ${i===qs.length-1?'disabled':''} onclick="jumpQ(${i+1})">下一题 &rarr;</button></div></div>`).join('')}</div></div>`;
+  let sec=e.dur*60;S.timer=setInterval(()=>{sec--;const m=Math.floor(sec/60),s=sec%60;document.getElementById('cdown').textContent=m+':'+s.toString().padStart(2,'0');if(sec<=0){clearInterval(S.timer);alert('时间到！自动交卷');navTo('exam-center');}},1000);}
+function jumpQ(i){document.querySelectorAll('.exam-q').forEach((el,idx)=>el.style.display=idx===i?'':'none');}
+
+// ─── STUDENT PROFILE ───
+R['student-profile']=()=>card('个人能力画像','')+'<div style="display:grid;grid-template-columns:300px 1fr;gap:24px;"><div><div class="radar-placeholder"><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;"><div style="font-size:32px;font-weight:700;color:var(--brand-600);">3.62</div><div style="font-size:12px;color:var(--text-secondary);">综合能力指数</div></div></div><p class="text-sec text-center mt16">能力雷达图（Chart.js 渲染）</p></div><div><h3 style="font-size:15px;margin-bottom:12px;">知识点掌握度</h3>'+M.kpMastery.map(k=>`<div style="margin-bottom:10px;"><div class="flex-between" style="font-size:12px;margin-bottom:4px;"><span>${k.kp}</span><span style="color:${k.v>=0.7?'var(--success)':k.v>=0.4?'var(--warning)':'var(--danger)'}">${Math.round(k.v*100)}%</span></div><div class="progress"><div class="fill ${k.v>=0.7?'green':k.v>=0.4?'':'orange'}" style="width:${k.v*100}%;"></div></div></div>`).join('')+'</div></div>'+ecard();
+
+// ─── WRONG QUESTIONS ───
+R['wrong-questions']=()=>card('错题本','<button class="btn btn-primary btn-sm">&#128260; 重新练习</button>')+
+  '<table class="tbl"><thead><tr><th>题目</th><th>科目</th><th>知识点</th><th>你的答案</th><th>正确答案</th><th>错误次数</th><th>状态</th></tr></thead><tbody>'+
+  M.wrongQs.map(w=>`<tr><td>${w.q}</td><td>${w.subj}</td><td>${w.kp}</td><td style="color:var(--danger);">${w.wrong}</td><td style="color:var(--success);">${w.correct}</td><td>${w.cnt}</td><td><span class="tag ${w.status==='已掌握'?'tag-green':'tag-orange'}">${w.status}</span></td></tr>`).join('')+'</tbody></table>'+ecard();
+
+// ─── COURSE RECOMMEND ───
+R['course-recommend']=()=>'<div class="alert alert-info mb16">&#129504; 基于你的能力画像和学业短板，智能推荐以下课程</div>'+card('推荐课程','')+
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">'+[{name:'软件工程',reason:'数据结构和算法掌握良好，建议拓展工程实践能力',match:92},{name:'云计算与大数据',reason:'操作系统知识扎实，适合进一步学习分布式系统',match:85},{name:'Python数据分析',reason:'概率论基础扎实，数据分析方向符合你的职业规划',match:78},{name:'Java高级编程',reason:'程序设计基础成绩优异(95分)，适合深入学习',match:95}].map(r=>`<div class="glass" style="padding:16px;display:flex;gap:12px;align-items:flex-start;"><div style="width:44px;height:44px;background:linear-gradient(135deg,var(--brand-100),var(--brand-200));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">&#11088;</div><div><div class="flex-between"><strong style="font-size:14px;">${r.name}</strong><span class="tag tag-green">${r.match}% 匹配</span></div><p class="text-sec mt4">${r.reason}</p></div></div>`).join('')+'</div>'+ecard();
+
+// ─── ACADEMIC PROGRESS ───
+R['academic-progress']=()=>statsRow([{icon:'&#127891;',val:'13/32',lbl:'已获/总学分',cls:'purple'},{icon:'&#128218;',val:'68%',lbl:'必修完成度',cls:'green'},{icon:'&#128260;',val:'25%',lbl:'选修完成度',cls:'orange'},{icon:'&#128200;',val:'4/8',lbl:'已完成学期',cls:'blue'}])+
+  card('培养方案完成度 — 计算机科学与技术 2024级','')+'<table class="tbl"><thead><tr><th>模块</th><th>要求学分</th><th>已获学分</th><th>完成度</th></tr></thead><tbody>'+
+  [{m:'通识必修',req:12,got:8},{m:'通识选修',req:6,got:2},{m:'学科基础',req:10,got:10,pct:100},{m:'专业必修',req:18,got:12},{m:'专业选修',req:8,got:0,pct:0},{m:'实践环节',req:6,got:0,pct:0}].map(r=>`<tr><td><strong>${r.m}</strong></td><td>${r.req}</td><td>${r.got}</td><td><div class="progress"><div class="fill ${r.got>=r.req?'green':''}" style="width:${Math.min(100,r.got/r.req*100)}%;"></div></div></td></tr>`).join('')+'</tbody></table>'+ecard();
+
+// ─── TEACHER SCHEDULE ───
+R['teacher-schedule']=()=>card('我的课表 — 赵教授','')+'<div class="sched"><div class="sched-h">节次</div>'+'一二三四五六日'.split('').map(d=>`<div class="sched-h">周${d}</div>`).join('')+
+  (function(){let r='';const ps=[['1-2','08:00-09:40'],['3-4','10:00-11:40'],['5-6','14:00-15:40'],['7-8','16:00-17:40'],['9-10','19:00-20:40']];
+  const sm={'0-0':[{n:'数据结构',cls:''}],'2-0':[{n:'数据结构',cls:''}],'2-2':[{n:'人工智能',cls:'green'}],'3-2':[{n:'人工智能',cls:'green'}],'0-4':[{n:'软件工程',cls:'orange'}],'2-4':[{n:'软件工程',cls:'orange'}]};
+  for(let ri=0;ri<5;ri++){r+=`<div class="sched-t">${ps[ri][0]}节<br>${ps[ri][1]}</div>`;for(let d=0;d<7;d++){const k=ri+'-'+d;const cs=sm[k]||[];r+=`<div class="sched-c">${cs.map(c=>`<div class="sched-item ${c.cls}">${c.n}</div>`).join('')}</div>`;}}return r;})()+'</div>'+ecard();
+
+// ─── SCORE ENTRY ───
+R['score-entry']=()=>card('成绩录入','<select class="select" style="width:240px;"><option>数据结构与算法 — 2025-2026-1</option><option>人工智能导论 — 2025-2026-1</option></select>')+
+  '<table class="tbl"><thead><tr><th>学号</th><th>姓名</th><th>平时(40%)</th><th>期末(60%)</th><th>总评</th><th>状态</th></tr></thead><tbody>'+
+  [{no:'2024001001',n:'张明远',d:90,f:93},{no:'2024001002',n:'李思雨',d:85,f:88},{no:'2024001003',n:'王磊',d:72,f:65}].map(s=>`<tr><td>${s.no}</td><td>${s.n}</td><td><input class="input" type="number" value="${s.d}" style="width:70px;height:32px;"></td><td><input class="input" type="number" value="${s.f}" style="width:70px;height:32px;"></td><td style="font-weight:700;color:${(s.d*0.4+s.f*0.6)>=60?'var(--success)':'var(--danger)'}">${Math.round(s.d*0.4+s.f*0.6)}</td><td><span class="tag tag-orange">草稿</span></td></tr>`).join('')+'</tbody></table>'+
+  '<div class="flex-row gap8" style="justify-content:flex-end;margin-top:16px;"><button class="btn btn-outline btn-sm">&#128229; 导入Excel</button><button class="btn btn-primary btn-sm">&#128190; 保存草稿</button><button class="btn btn-sm" style="background:var(--warning);color:#fff;">&#128228; 提交审核</button></div>'+ecard();
+
+// ─── QUESTION BANK ───
+R['question-bank']=()=>card('题库管理','<div class="flex-row gap8"><button class="btn btn-outline btn-sm">&#128229; 批量导入</button><button class="btn btn-primary btn-sm">+ 添加试题</button></div>')+
+  '<div class="filters"><select class="select"><option>全部题型</option><option>单选</option><option>多选</option><option>判断</option><option>填空</option></select><select class="select"><option>全部科目</option><option>数据结构</option><option>操作系统</option></select><input class="input" placeholder="&#128269; 搜索题目..." style="width:200px;"></div>'+
+  '<table class="tbl"><thead><tr><th>ID</th><th>题型</th><th>题目</th><th>科目</th><th>知识点</th><th>难度</th><th>状态</th><th>操作</th></tr></thead><tbody>'+
+  M.questions.map(q=>`<tr><td>${q.id}</td><td><span class="tag tag-purple">${q.type}</span></td><td>${q.content.substring(0,25)}...</td><td>${q.subj}</td><td>${q.kp}</td><td>${q.diff<=0.3?'<span class="tag tag-green">简单</span>':q.diff<=0.6?'<span class="tag tag-orange">中等</span>':'<span class="tag tag-red">困难</span>'}</td><td><span class="tag tag-green">已通过</span></td><td><button class="btn btn-outline btn-xs">编辑</button> <button class="btn btn-danger btn-xs">禁用</button></td></tr>`).join('')+'</tbody></table>'+ecard();
+
+// ─── COURSE APPLY ───
+R['course-apply']=()=>card('课程申报','')+'<div style="max-width:560px;"><div class="form-grid"><div class="fg"><label>课程名称</label><input class="input w-full" placeholder="请输入课程名称"></div><div class="fg"><label>课程编码</label><input class="input w-full" placeholder="如 CS501"></div><div class="fg"><label>学分</label><input class="input w-full" type="number" value="3"></div><div class="fg"><label>学时</label><input class="input w-full" type="number" value="48"></div><div class="fg"><label>课程类型</label><select class="select w-full"><option>必修</option><option>专业选修</option><option>通识选修</option><option>体育</option></select></div><div class="fg"><label>科目分类</label><select class="select w-full"><option>工学/计算机</option><option>理学/数学</option></select></div></div><div class="fg mt16"><label>课程简介</label><textarea class="input w-full" rows="3" placeholder="请输入课程简介..."></textarea></div><div class="fg"><label>教学大纲</label><input class="input w-full" type="file"></div><button class="btn btn-primary mt8">&#128228; 提交申报</button></div>'+ecard();
+
+// ─── USER MGMT ───
+R['user-mgmt']=()=>card('用户管理','<button class="btn btn-primary btn-sm">+ 新增用户</button>')+
+  '<table class="tbl"><thead><tr><th>账号</th><th>姓名</th><th>角色</th><th>院系</th><th>状态</th><th>最后登录</th><th>操作</th></tr></thead><tbody>'+
+  M.users.map(u=>`<tr><td>${u.un}</td><td>${u.name}</td><td><span class="tag tag-purple">${u.role}</span></td><td>${u.dept}</td><td>${u.status? '<span class="tag tag-green">正常</span>':'<span class="tag tag-red">禁用</span>'}</td><td>${u.ll}</td><td><button class="btn btn-outline btn-xs">编辑</button> <button class="btn btn-danger btn-xs">${u.status?'禁用':'启用'}</button></td></tr>`).join('')+'</tbody></table>'+ecard();
+
+// ─── ROLE MGMT (NEW) ───
+R['role-mgmt']=()=>card('角色管理','<button class="btn btn-primary btn-sm">+ 新增角色</button>')+
+  '<table class="tbl"><thead><tr><th>ID</th><th>角色名称</th><th>角色编码</th><th>用户数</th><th>描述</th><th>操作</th></tr></thead><tbody>'+
+  M.roles.map(r=>`<tr><td>${r.id}</td><td><strong>${r.name}</strong></td><td><code style="background:var(--brand-50);padding:2px 8px;border-radius:4px;font-size:12px;">${r.code}</code></td><td>${r.users}</td><td class="text-sec">${r.desc}</td><td><button class="btn btn-outline btn-xs" onclick="showPermMatrix(${r.id})">权限分配</button> <button class="btn btn-outline btn-xs">编辑</button> <button class="btn btn-danger btn-xs">删除</button></td></tr>`).join('')+'</tbody></table>'+ecard();
+function showPermMatrix(rid){const r=M.roles.find(x=>x.id===rid);if(!r)return;document.getElementById('modal-title').textContent=r.name+' — 权限矩阵';
+document.getElementById('modal-body').innerHTML=
+  '<table class="tbl"><thead><tr><th>菜单/功能</th><th>查看</th><th>新增</th><th>编辑</th><th>删除</th><th>导出</th></tr></thead><tbody>'+
+  [{m:'课程广场',p:'course-market'},{m:'我的课表',p:'schedule'},{m:'我的选课',p:'enrollments'},{m:'成绩管理',p:'scores'},{m:'考试中心',p:'exams'},{m:'用户管理',p:'users'},{m:'角色管理',p:'roles'},{m:'菜单管理',p:'menus'},{m:'系统配置',p:'config'},{m:'操作日志',p:'logs'}].map(i=>`<tr><td><strong>${i.m}</strong></td>${'查看|新增|编辑|删除|导出'.split('|').map(a=>`<td><input type="checkbox" ${i.p==='course-market'||i.m==='角色管理'?'':'checked'}></td>`).join('')}</tr>`).join('')+'</tbody></table>';
+document.getElementById('modal-foot').innerHTML='<button class="btn btn-outline btn-sm" onclick="closeModal()">取消</button><button class="btn btn-primary btn-sm" onclick="closeModal()">&#128190; 保存权限</button>';
+document.getElementById('modal-generic').classList.add('show');}
+
+// ─── MENU MGMT (NEW) ───
+R['menu-mgmt']=()=>card('菜单管理','<div class="flex-row gap8"><button class="btn btn-outline btn-sm">&#128259; 展开全部</button><button class="btn btn-primary btn-sm">+ 新增菜单</button></div>')+
+  '<div class="glass" style="padding:16px;">'+function buildTree(nodes,level){
+    return nodes.map(n=>`<div class="tree-node" style="padding-left:${level*20+12}px;"><span class="expand">${n.children.length?'&#9660;':'&middot;'}</span>${n.icon?'['+n.icon+'] ':''}<strong>${n.label}</strong> <code style="background:var(--brand-50);padding:1px 6px;border-radius:3px;font-size:11px;margin-left:6px;">${n.path||'-'}</code><span class="text-sec" style="margin-left:8px;">排序:${n.sort}</span><span style="margin-left:auto;display:flex;gap:4px;">${n.visible? '<span class="tag tag-green">显示</span>':'<span class="tag tag-gray">隐藏</span>'}<button class="btn btn-outline btn-xs">编辑</button><button class="btn btn-danger btn-xs">删除</button></span></div>`+(n.children.length?`<div class="tree-children">${buildTree(n.children,level+1)}</div>`:'')).join('');
+  }(M.menus,0)+'</div><p class="text-sec mt16">&#9432; 拖拽调整菜单排序 | 支持三级菜单结构</p>'+ecard();
+
+// ─── SYSTEM CONFIG (NEW) ───
+R['system-config']=()=>card('系统配置','<button class="btn btn-primary btn-sm">&#128190; 保存全部</button>')+
+  '<table class="tbl"><thead><tr><th>参数Key</th><th>参数名称</th><th>当前值</th><th>类型</th><th>操作</th></tr></thead><tbody>'+
+  M.settings.map(s=>`<tr><td><code style="background:var(--brand-50);padding:2px 8px;border-radius:4px;font-size:12px;">${s.key}</code></td><td><strong>${s.name}</strong></td><td>${s.type==='boolean'?`<label style="cursor:pointer;"><input type="checkbox" ${s.val==='true'?'checked':''}> ${s.val==='true'?'启用':'禁用'}</label>`:`<input class="input" value="${s.val}" style="width:100px;height:32px;">`}</td><td><span class="tag tag-purple">${s.type}</span></td><td><button class="btn btn-outline btn-xs">重置</button></td></tr>`).join('')+'</tbody></table>'+ecard();
+
+// ─── AUDIT LOG (NEW) ───
+R['audit-log']=()=>card('操作日志','<button class="btn btn-outline btn-sm">&#128229; 导出日志</button>')+
+  '<div class="filters"><select class="select"><option>全部模块</option><option>用户管理</option><option>题库管理</option><option>选课</option></select><select class="select"><option>全部操作</option><option>新增</option><option>修改</option><option>删除</option></select><input class="input" placeholder="&#128269; 搜索操作人..." style="width:180px;"><input class="input" type="date" style="width:140px;"><input class="input" type="date" style="width:140px;"></div>'+
+  '<table class="tbl"><thead><tr><th>ID</th><th>操作人</th><th>模块</th><th>操作</th><th>目标</th><th>状态</th><th>耗时(ms)</th><th>IP</th><th>时间</th></tr></thead><tbody>'+
+  M.logs.map(l=>`<tr><td>${l.id}</td><td>${l.uid}</td><td>${l.module}</td><td>${l.action}</td><td>${l.target}</td><td>${l.status===200?'<span class="tag tag-green">成功</span>':'<span class="tag tag-red">'+l.status+'</span>'}</td><td>${l.cost}</td><td>${l.ip}</td><td style="font-size:11px;">${l.time}</td></tr>`).join('')+'</tbody></table>'+ecard();
+
+// ─── SYS MONITOR ───
+R['sys-monitor']=()=>statsRow([{icon:'&#9889;',val:'856',lbl:'当前QPS',cls:'purple'},{icon:'&#128101;',val:'1,247',lbl:'在线用户',cls:'green'},{icon:'&#9201;',val:'180ms',lbl:'平均RT',cls:'orange'},{icon:'&#128190;',val:'42%',lbl:'内存使用',cls:'blue'}])+
+  card('服务状态','')+'<table class="tbl"><thead><tr><th>服务</th><th>状态</th><th>CPU</th><th>内存</th><th>运行时间</th></tr></thead><tbody>'+
+  [{s:'选课服务 (x2)',st:'正常',c:'35%',m:'42%',u:'15d 6h'},{s:'排课服务 (x2)',st:'正常',c:'12%',m:'28%',u:'15d 6h'},{s:'考试服务 (x2)',st:'正常',c:'8%',m:'22%',u:'15d 6h'},{s:'MySQL 主库',st:'正常',c:'45%',m:'68%',u:'30d 2h'},{s:'Redis 集群',st:'正常',c:'10%',m:'35%',u:'30d 2h'}].map(s=>`<tr><td>${s.s}</td><td><span class="tag tag-green">${s.st}</span></td><td>${s.c}</td><td>${s.m}</td><td>${s.u}</td></tr>`).join('')+'</tbody></table>'+ecard();
+
+// ─── SCHEDULE MGMT (NEW - ACADEMIC) ───
+R['schedule-mgmt']=()=>'<div class="alert alert-info mb16">&#128197; 排课管理 — 2025-2026-2 | 可拖拽调整课程时间</div>'+card('可视化排课','<div class="flex-row gap8"><button class="btn btn-outline btn-sm">&#128259; 自动排课</button><button class="btn btn-primary btn-sm">&#128190; 保存排课</button><button class="btn btn-sm" style="background:var(--success);color:#fff;">&#128228; 发布课表</button></div>')+
+  '<div style="display:flex;gap:12px;margin-bottom:12px;"><select class="select"><option>计算机科学与技术学院</option></select><select class="select"><option>2024级</option></select><span class="text-sec">拖拽课程色块调整时间，系统实时检测冲突</span></div>'+
+  '<div class="sched"><div class="sched-h">节次</div>'+'一二三四五六日'.split('').map(d=>`<div class="sched-h">周${d}</div>`).join('')+
+  (function(){let r='';const ps=[['1-2','08:00'],['3-4','10:00'],['5-6','14:00'],['7-8','16:00'],['9-10','19:00']];
+  const sm={'0-0':[{n:'数据结构',cls:'',t:'赵教授',r:'A-301'}],'2-0':[{n:'数据结构',cls:'',t:'赵教授',r:'A-301'}],'1-1':[{n:'操作系统',cls:'green',t:'钱副教授',r:'B-201'}],'3-1':[{n:'操作系统',cls:'green',t:'钱副教授',r:'B-201'}],'2-2':[{n:'概率论',cls:'orange',t:'钱副教授',r:'B-102'}],'3-3':[{n:'概率论',cls:'orange',t:'钱副教授',r:'B-102'}],'1-2':[{n:'大学英语',cls:'purple',t:'孙讲师',r:'D-201'}],
+  '0-4':[{n:'软件工程',cls:'',t:'赵教授',r:'A-201'}],'2-4':[{n:'软件工程',cls:'',t:'赵教授',r:'A-201'}],};
+  for(let ri=0;ri<5;ri++){r+=`<div class="sched-t">${ps[ri][0]}节<br>${ps[ri][1]}</div>`;for(let d=0;d<7;d++){const k=ri+'-'+d;const cs=sm[k]||[];r+=`<div class="sched-c" style="min-height:64px;">${cs.map(c=>`<div class="sched-item ${c.cls}" title="${c.t} | ${c.r}">${c.n}</div>`).join('')}</div>`;}}return r;})()+'</div>'+ecard()+card('冲突检测','')+'<div style="display:flex;gap:8px;"><div class="tag tag-green">&#9989; 0个硬冲突</div><div class="tag tag-orange">&#9888; 2个软约束建议</div><div class="text-sec" style="margin-left:12px;">周四连排课程稍多，建议调整 | 钱副教授周五上午可增加排课</div></div>'+ecard();
+
+// ─── EXAM MGMT (NEW - ACADEMIC) ───
+R['exam-mgmt']=()=>card('考试管理','<button class="btn btn-primary btn-sm">+ 创建考试</button>')+'<div class="tabs"><div class="tab active">全部考试 (5)</div><div class="tab">进行中 (1)</div><div class="tab">已结束 (4)</div></div>'+
+  '<table class="tbl"><thead><tr><th>名称</th><th>课程</th><th>类型</th><th>开始时间</th><th>时长</th><th>模式</th><th>考生数</th><th>状态</th><th>操作</th></tr></thead><tbody>'+
+  [{n:'数据结构期中',c:'数据结构',ty:'期中',st:'2026-07-15 09:00',d:120,m:'固定试卷',cnt:67,s:'未开始'},{n:'操作系统模拟',c:'操作系统',ty:'模拟',st:'2026-07-08 14:00',d:90,m:'随机组卷',cnt:58,s:'未开始'},{n:'高数单元测试',c:'高等数学(二)',ty:'单元测',st:'2026-06-25 10:00',d:60,m:'固定试卷',cnt:90,s:'已结束'}].map(e=>`<tr><td><strong>${e.n}</strong></td><td>${e.c}</td><td><span class="tag tag-purple">${e.ty}</span></td><td>${e.st}</td><td>${e.d}分钟</td><td><span class="tag tag-blue">${e.m}</span></td><td>${e.cnt}</td><td>${e.s==='未开始'?'<span class="tag tag-gray">未开始</span>':'<span class="tag tag-green">已结束</span>'}</td><td><button class="btn btn-outline btn-xs">编辑</button> <button class="btn btn-primary btn-xs">${e.s==='未开始'?'发布':'查看'}</button></td></tr>`).join('')+'</tbody></table>'+ecard();
+
+// ─── SCORE REVIEW (NEW) ───
+R['score-review']=()=>card('成绩审核','')+'<div class="tabs"><div class="tab active">待审核 (12)</div><div class="tab">已通过</div><div class="tab">已驳回</div></div>'+
+  '<table class="tbl"><thead><tr><th>课程</th><th>教师</th><th>提交时间</th><th>学生数</th><th>平均分</th><th>及格率</th><th>状态</th><th>操作</th></tr></thead><tbody>'+
+  [{c:'数据结构与算法',t:'赵教授',time:'2026-07-05 16:30',cnt:67,avg:78.5,rate:'92%'},{c:'操作系统',t:'钱副教授',time:'2026-07-05 15:20',cnt:58,avg:71.2,rate:'85%'},{c:'高等数学(二)',t:'李教授',time:'2026-07-04 14:00',cnt:90,avg:68.7,rate:'78%'}].map(s=>`<tr><td><strong>${s.c}</strong></td><td>${s.t}</td><td>${s.time}</td><td>${s.cnt}</td><td>${s.avg}</td><td>${s.rate}</td><td><span class="tag tag-orange">待审核</span></td><td><button class="btn btn-success btn-xs">通过</button> <button class="btn btn-danger btn-xs">驳回</button></td></tr>`).join('')+'</tbody></table>'+ecard();
+
+// ─── EVALUATION CONFIG (NEW) ───
+R['evaluation-config']=()=>card('教学评价配置','<button class="btn btn-primary btn-sm">+ 新建问卷</button>')+'<table class="tbl"><thead><tr><th>问卷名称</th><th>适用学期</th><th>题目数</th><th>状态</th><th>关联课程数</th><th>操作</th></tr></thead><tbody>'+
+  [{n:'2025-2026-1 教学评价',sem:'2025-2026-1',cnt:10,status:'进行中',cc:48},{n:'2024-2025-2 教学评价',sem:'2024-2025-2',cnt:10,status:'已结束',cc:45}].map(e=>`<tr><td><strong>${e.n}</strong></td><td>${e.sem}</td><td>${e.cnt}题</td><td><span class="tag ${e.status==='进行中'?'tag-green':'tag-gray'}">${e.status}</span></td><td>${e.cc}</td><td><button class="btn btn-outline btn-xs">编辑</button> <button class="btn btn-outline btn-xs">查看统计</button></td></tr>`).join('')+'</tbody></table>'+
+  '<div class="alert alert-info mt16">&#9881; 可配置：未完成评教则无法查看成绩 | 评价维度：教学态度、内容质量、方法效果、课堂氛围</div>'+ecard();
+
+// ─── ENROLLMENT MONITOR (NEW) ───
+R['enrollment-monitor']=()=>card('实时选课监控','')+'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">'+
+  [{l:'当前在线',v:'1,247',t:'+12%',c:'green'},{l:'选课成功率',v:'94.3%',t:'-0.5%',c:'orange'},{l:'平均等待',v:'0.8s',t:'正常',c:'green'}].map(s=>`<div class="glass" style="padding:16px;text-align:center;"><div class="stat-val" style="font-size:28px;">${s.v}</div><div class="stat-lbl">${s.l}</div><div class="mt4" style="font-size:12px;color:${s.c==='green'?'var(--success)':'var(--warning)'};">${s.t}</div></div>`)+'</div>'+
+  '<table class="tbl"><thead><tr><th>课程</th><th>容量</th><th>已选</th><th>剩余</th><th>选课率</th><th>状态</th></tr></thead><tbody>'+
+  M.courses.map(c=>`<tr><td><strong>${c.name}</strong></td><td>${c.cap}</td><td>${c.enr}</td><td style="color:${c.enr>=c.cap?'var(--danger)':'var(--success)'}">${c.cap-c.enr}</td><td><div class="progress"><div class="fill ${c.enr>=c.cap?'':'green'}" style="width:${c.enr/c.cap*100}%;"></div></div></td><td>${c.enr>=c.cap?'<span class="tag tag-red">已满</span>':c.enr>=c.cap*0.8?'<span class="tag tag-orange">热门</span>':'<span class="tag tag-green">正常</span>'}</td></tr>`).join('')+'</tbody></table>'+ecard();
+
+// ─── ROUND CONFIG ───
+R['round-config']=()=>card('选课轮次配置','<button class="btn btn-primary btn-sm">+ 新增轮次</button>')+
+  '<table class="tbl"><thead><tr><th>轮次</th><th>名称</th><th>类型</th><th>开始</th><th>结束</th><th>门数上限</th><th>学分上限</th><th>状态</th><th>操作</th></tr></thead><tbody>'+
+  [{r:1,n:'一轮初选',ty:'抽签制',st:'2026-06-15 09:00',et:'2026-06-20 17:00',mc:5,cc:25,status:'已结束'},{r:2,n:'二轮补退选',ty:'抢课制',st:'2026-07-01 09:00',et:'2026-07-10 17:00',mc:3,cc:18,status:'进行中'},{r:3,n:'三轮退改选',ty:'退改选',st:'2026-07-15 09:00',et:'2026-07-20 17:00',mc:2,cc:6,status:'未开始'}].map(r=>`<tr><td>${r.r}</td><td><strong>${r.n}</strong></td><td><span class="tag tag-purple">${r.ty}</span></td><td>${r.st}</td><td>${r.et}</td><td>${r.mc}</td><td>${r.cc}</td><td>${r.status==='已结束'?'<span class="tag tag-green">已结束</span>':r.status==='进行中'?'<span class="tag tag-blue">进行中</span>':'<span class="tag tag-gray">未开始</span>'}</td><td><button class="btn btn-outline btn-xs">编辑</button></td></tr>`).join('')+'</tbody></table>'+ecard();
+
+// ─── COURSE APPROVAL ───
+R['course-approval']=()=>card('课程审核','')+'<div class="tabs"><div class="tab active">待审核 ('+M.approvals.length+')</div><div class="tab">已通过</div><div class="tab">已驳回</div></div>'+
+  '<table class="tbl"><thead><tr><th>编码</th><th>课程</th><th>教师</th><th>学分</th><th>类型</th><th>时间</th><th>阶段</th><th>操作</th></tr></thead><tbody>'+
+  M.approvals.map(a=>`<tr><td>${a.code}</td><td><strong>${a.name}</strong></td><td>${a.teacher}</td><td>${a.credit}</td><td><span class="tag tag-purple">${a.type}</span></td><td>${a.time}</td><td><span class="tag tag-orange">${a.stage}</span></td><td><button class="btn btn-success btn-xs">通过</button> <button class="btn btn-danger btn-xs">驳回</button></td></tr>`).join('')+'</tbody></table>'+ecard();
+
+// ─── TRAINING PLAN (NEW) ───
+R['training-plan']=()=>card('培养方案管理','<button class="btn btn-primary btn-sm">+ 新增方案</button>')+
+  '<div class="filters"><select class="select"><option>计算机科学与技术学院</option></select><select class="select"><option>计算机科学与技术</option></select><select class="select"><option>2024级</option></select></div>'+
+  '<table class="tbl"><thead><tr><th>模块</th><th>课程</th><th>学分</th><th>类型</th><th>学期建议</th></tr></thead><tbody>'+
+  [{m:'通识必修',c:'大学英语(三)',cr:2,t:'必修',sem:'3'},{m:'通识必修',c:'中国近现代史纲要',cr:2,t:'必修',sem:'3'},{m:'学科基础',c:'数据结构与算法',cr:4,t:'必修',sem:'3'},{m:'学科基础',c:'操作系统',cr:3,t:'必修',sem:'3'},{m:'学科基础',c:'概率论与数理统计',cr:3,t:'必修',sem:'3'},{m:'专业选修',c:'人工智能导论',cr:3,t:'选修',sem:'3-4'},{m:'专业选修',c:'软件工程',cr:3,t:'选修',sem:'4'}].map(p=>`<tr><td><span class="tag tag-purple">${p.m}</span></td><td><strong>${p.c}</strong></td><td>${p.cr}</td><td>${p.t}</td><td>第${p.sem}学期</td></tr>`).join('')+'</tbody></table>'+ecard();
+
+// ─── STUDENT IMPORT (NEW) ───
+R['student-import']=()=>card('新生数据导入','')+'<div style="max-width:560px;"><div class="form-grid"><div class="fg"><label>导入批次</label><input class="input w-full" value="2026级新生"></div><div class="fg"><label>入学年份</label><select class="select w-full"><option>2026</option><option>2025</option></select></div><div class="fg"><label>院系</label><select class="select w-full"><option>计算机科学与技术学院</option></select></div><div class="fg"><label>专业</label><select class="select w-full"><option>计算机科学与技术</option><option>软件工程</option></select></div></div>'+
+  '<div class="fg mt16"><label>上传文件</label><input class="input w-full" type="file" accept=".xlsx,.csv"><p class="text-sec mt4">支持 Excel(.xlsx) 和 CSV 格式 | <a href="#">下载模板</a></p></div>'+
+  '<div class="alert alert-info mt16">&#9432; 导入后将自动生成学号和初始密码，批量分配培养方案。预计导入 320 名学生。</div>'+
+  '<button class="btn btn-primary">&#128229; 开始导入</button></div>'+ecard();
+
+// ─── NOTIFICATIONS (NEW) ───
+R.notifications=()=>card('消息通知中心','<button class="btn btn-outline btn-sm">&#9989; 全部已读</button>')+
+  M.notifications.map(n=>`<div style="padding:12px 0;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start;${n.read?'opacity:0.6':''}"><div style="width:8px;height:8px;border-radius:50%;background:${n.read?'var(--text-muted)':'var(--brand-500)'};flex-shrink:0;margin-top:6px;"></div><div style="flex:1;"><div class="flex-between"><strong style="font-size:14px;">${n.title}</strong><span class="text-sec">${n.time}</span></div><p class="text-sec mt4">${n.content}</p><div class="flex-row gap8 mt4"><span class="tag tag-purple">${n.type}</span><span class="tag tag-gray">${n.ch}</span></div></div></div>`).join('')+ecard();
+
+// ─── SETTINGS (NEW) ───
+R.settings=()=>card('个人设置','')+'<div class="tabs"><div class="tab active">基本资料</div><div class="tab">修改密码</div><div class="tab">通知偏好</div></div>'+
+  '<div class="form-grid" style="max-width:480px;"><div class="fg"><label>姓名</label><input class="input w-full" value="'+S.user.name+'"></div><div class="fg"><label>手机号</label><input class="input w-full" value="138****8888"></div><div class="fg"><label>邮箱</label><input class="input w-full" value="student@smartedu.com"></div><div class="fg"><label>院系</label><input class="input w-full" value="'+S.user.dept+'" disabled></div></div>'+
+  '<div style="max-width:480px;margin-top:16px;"><div class="fg"><label>旧密码</label><input class="input w-full" type="password" placeholder="输入旧密码"></div><div class="fg"><label>新密码</label><input class="input w-full" type="password" placeholder="至少8位含字母数字"></div><div class="fg"><label>确认新密码</label><input class="input w-full" type="password" placeholder="再次输入新密码"></div></div><button class="btn btn-primary mt16">&#128190; 保存设置</button>'+ecard();
+
+// ─── KNOWLEDGE GRAPH ───
+R['knowledge-graph']=()=>card('知识图谱','<button class="btn btn-primary btn-sm">+ 新增知识点</button>')+
+  '<div style="padding:12px;">'+function buildKP(nodes,level){
+    return nodes.map(n=>`<div class="tree-node" style="padding-left:${level*20+12}px;"><span class="expand">&#128218;</span><strong>${n.label}</strong><span class="text-sec" style="margin-left:8px;">权重:${n.w} | 关联:${n.rel}个</span><span style="margin-left:auto;"><button class="btn btn-outline btn-xs">编辑</button></span></div>`+(n.children?`<div class="tree-children">${buildKP(n.children,level+1)}</div>`:'')).join('');
+  }([{label:'数据结构与算法',w:1,rel:8,children:[{label:'线性表',w:0.3,rel:3,children:[{label:'数组',w:0.1,rel:2},{label:'链表',w:0.1,rel:3},{label:'栈与队列',w:0.1,rel:2}]},{label:'树与图',w:0.4,rel:5,children:[{label:'二叉树',w:0.15,rel:3},{label:'图论',w:0.15,rel:2},{label:'堆',w:0.1,rel:2}]},{label:'查找与排序',w:0.3,rel:4,children:[{label:'哈希表',w:0.1,rel:2},{label:'排序算法',w:0.1,rel:3},{label:'搜索树',w:0.1,rel:2}]}]}],0)+'</div>'+ecard();
+
+// ═══ V1.2 NEW: DATA DASHBOARD ═══
+R['data-dashboard']=()=>{
+  return statsRow([{icon:'&#128101;',val:'5,230',lbl:'总用户',cls:'purple'},{icon:'&#128202;',val:'94.3%',lbl:'选课完成率',cls:'green'},{icon:'&#128200;',val:'3.62',lbl:'平均 GPA',cls:'orange'},{icon:'&#9889;',val:'856',lbl:'当前 QPS',cls:'blue'}])+
+  '<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">'+
+  card('&#128200; 选课热度趋势 (近7日)','')+'<canvas id="chart-enroll-trend" style="max-height:240px;"></canvas>'+ecard()+
+  card('&#127942; 各院系选课完成率','')+'<canvas id="chart-dept-pie" style="max-height:240px;"></canvas>'+ecard()+
+  '</div>'+
+  '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;">'+
+  card('&#128202; 成绩分布','')+'<canvas id="chart-score-dist" style="max-height:200px;"></canvas>'+ecard()+
+  card('&#127919; 知识点掌握度','')+'<canvas id="chart-kp-radar" style="max-height:200px;"></canvas>'+ecard()+
+  card('&#127969; 教室利用率 TOP5','')+'<div id="classroom-bars">'+[{n:'A-301',v:92},{n:'B-201',v:88},{n:'C-501',v:85},{n:'D-101',v:72},{n:'实验室A',v:65}].map((c,i)=>`<div style="display:flex;align-items:center;gap:8px;margin:6px 0;"><span style="font-size:12px;width:50px;">${c.n}</span><div class="progress" style="flex:1;"><div class="fill green" style="width:${c.v}%;"></div></div><span style="font-size:12px;width:40px;text-align:right;">${c.v}%</span></div>`).join('')+'</div>'+ecard()+
+  '</div>'+
+  card('&#9203; 系统 QPS 实时监控 (近1小时)','')+'<canvas id="chart-qps" style="max-height:200px;"></canvas>'+ecard()+
+  card('&#9888; 学业预警概览','')+
+  '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center;">'+
+  [{n:'学分预警',v:12,c:'orange'},{n:'GPA 预警',v:8,c:'red'},{n:'挂科预警',v:5,c:'red'},{n:'待处理',v:25,c:'purple'}].map(s=>`<div class="glass" style="padding:14px;text-align:center;"><div style="font-size:28px;font-weight:700;color:${s.c==='red'?'var(--danger)':s.c==='orange'?'var(--warning)':'var(--brand-500)'};">${s.v}</div><div class="text-sec mt4">${s.n}</div></div>`).join('')+
+  '</div>'+ecard()+
+  '<script>setTimeout(function(){'+
+  'if(document.getElementById("chart-enroll-trend")){new Chart(document.getElementById("chart-enroll-trend").getContext("2d"),{type:"line",data:{labels:["6/30","7/1","7/2","7/3","7/4","7/5","7/6"],datasets:[{label:"选课数",data:[120,340,890,1240,1560,1820,2050],borderColor:"#8b5cf6",backgroundColor:"rgba(139,92,246,0.1)",fill:true,tension:0.4,pointRadius:3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});}'+
+  'if(document.getElementById("chart-dept-pie")){new Chart(document.getElementById("chart-dept-pie").getContext("2d"),{type:"doughnut",data:{labels:["计算机学院","数统学院","外国语学院","体育部","马克思主义学院"],datasets:[{data:[42,18,15,12,13],backgroundColor:["#8b5cf6","#7c3aed","#a78bfa","#c4b5fd","#ddd6fe"],borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:"right",labels:{font:{size:11},padding:12}}}}});}'+
+  'if(document.getElementById("chart-score-dist")){new Chart(document.getElementById("chart-score-dist").getContext("2d"),{type:"bar",data:{labels:["<60","60-69","70-79","80-89","90-100"],datasets:[{label:"人数",data:[45,120,280,340,215],backgroundColor:["#ef4444","#f59e0b","#8b5cf6","#7c3aed","#10b981"]}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});}'+
+  'if(document.getElementById("chart-kp-radar")){new Chart(document.getElementById("chart-kp-radar").getContext("2d"),{type:"radar",data:{labels:["栈与队列","树与图","哈希表","进程调度","排序算法","图论"],datasets:[{label:"全校平均",data:[72,68,85,55,78,45],borderColor:"#8b5cf6",backgroundColor:"rgba(139,92,246,0.1)",pointBackgroundColor:"#8b5cf6"}]},options:{responsive:true,scales:{r:{beginAtZero:true,max:100,ticks:{stepSize:20,font:{size:9}}}},plugins:{legend:{display:false}}}});}'+
+  'if(document.getElementById("chart-qps")){new Chart(document.getElementById("chart-qps").getContext("2d"),{type:"line",data:{labels:Array.from({length:12},(_,i)=>(-55+i*5)+"min"),datasets:[{label:"QPS",data:[420,680,890,756,623,912,856,789,654,543,721,856],borderColor:"#7c3aed",backgroundColor:"rgba(124,58,237,0.05)",fill:true,tension:0.3,pointRadius:2,borderWidth:2}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});}'+
+  '},200);<\/script>';
+};
+
+// ═══ V1.2 NEW: AI EXAM GENERATION ═══
+R['ai-exam-gen']=()=>{
+  return '<div style="max-width:720px;margin:0 auto;">'+
+  card('&#129302; AI 智能出卷','')+
+  '<p class="text-sec mb16">用自然语言描述你想要的试卷，AI 将自动生成个性化试题。</p>'+
+  '<div style="background:rgba(139,92,246,0.04);border-radius:16px;padding:20px;margin-bottom:16px;max-height:400px;overflow-y:auto;" id="ai-chat">'+
+  '<div style="text-align:center;padding:40px 0;color:var(--text-muted);">'+
+  '<div style="font-size:48px;margin-bottom:8px;">&#129504;</div>'+
+  '<div>描述你的出卷需求，AI 为你生成专属试卷</div>'+
+  '<div class="text-sec mt8">试试："帮我出一套数据结构期中考卷，10道题，重点考树和图"</div>'+
+  '</div></div>'+
+  '<div style="display:flex;gap:10px;">'+
+  '<input class="input" id="ai-prompt" style="flex:1;height:48px;border-radius:16px;font-size:14px;" placeholder="描述你想要的试卷...">'+
+  '<button class="btn btn-primary" style="height:48px;border-radius:16px;" onclick="doAiGen()">&#129504; 生成</button>'+
+  '</div>'+
+  '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">'+
+  ['数据结构期中','操作系统模拟','高数单元测试','C语言期末','英语词汇'].map(t=>`<span class="tag tag-purple" style="cursor:pointer;padding:6px 14px;font-size:12px;" onclick="document.getElementById('ai-prompt').value='帮我出一套${t}试卷，难度中等，共20道题'">${t}</span>`).join('')+
+  '</div>'+ecard()+
+  '</div>';
+};
+
+function doAiGen(){
+  const prompt=document.getElementById('ai-prompt')?.value||'';
+  if(!prompt.trim())return;
+  const chat=document.getElementById('ai-chat');
+  if(!chat)return;
+  chat.innerHTML='<div style="margin-bottom:12px;"><span class="tag tag-purple" style="padding:4px 10px;">&#128100; 你</span><div style="background:rgba(139,92,246,0.06);border-radius:12px;padding:12px;margin-top:6px;">'+prompt+'</div></div>'+
+  '<div id="ai-typing"><span class="tag tag-green" style="padding:4px 10px;">&#129504; AI</span><div style="background:rgba(16,185,129,0.06);border-radius:12px;padding:12px;margin-top:6px;" id="ai-response"><span class="text-sec">正在分析你的需求</span><span id="ai-dots">.</span></div></div>';
+  // Simulate streaming
+  const dots=document.getElementById('ai-dots');let d=0;
+  const dotTimer=setInterval(()=>{d++;if(dots)dots.textContent='.'.repeat(d%4);},400);
+  setTimeout(()=>{
+    clearInterval(dotTimer);
+    const resp=document.getElementById('ai-response');
+    if(resp)resp.innerHTML='<strong style="color:var(--brand-600);">已生成试卷：数据结构精准自测</strong><br><br>'+
+    '<div style="font-size:12px;color:var(--text-secondary);">'+
+    '&#128218; 科目：数据结构与算法<br>'+
+    '&#128221; 题型分布：单选题 8题 + 判断题 4题 + 填空题 4题 + 简答题 2题 + 编程题 2题<br>'+
+    '&#127919; 知识点覆盖：树与图(30%)、栈与队列(25%)、排序(20%)、哈希表(15%)、链表(10%)<br>'+
+    '&#9889; 难度：中等偏上（匹配你的薄弱点）<br>'+
+    '&#9200; 预估时间：60分钟<br><br>'+
+    '&#129504; <strong>AI 分析：</strong>你的树与图掌握度仅32%，本次试卷重点强化此模块。'+
+    '</div><br><button class="btn btn-primary btn-sm" onclick="alert(\'试卷已生成！\\n\\n即将跳转到作答页面...\')">&#128260; 开始作答</button> '+
+    '<button class="btn btn-outline btn-sm" onclick="alert(\'已复制试卷链接\')">&#128279; 分享试卷</button>';
+    chat.scrollTop=chat.scrollHeight;
+  },2000);
+  chat.scrollTop=chat.scrollHeight;
+}
+
+// ═══ V1.2 NEW: MINI-PROGRAM PREVIEW ═══
+R['mini-program']=()=>{
+  const pages={
+    login:`<div style="padding:40px 30px 20px;background:linear-gradient(135deg,var(--brand-700),var(--brand-900));text-align:center;min-height:100%;">`+
+    '<div style="width:50px;height:50px;background:rgba(255,255,255,0.15);border-radius:14px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:22px;">&#9997;</div>'+
+    '<div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:20px;">智教通</div>'+
+    '<div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:12px;margin-bottom:10px;text-align:left;color:rgba(255,255,255,0.6);"><input style="background:none;border:none;color:#fff;width:100%;outline:none;font-size:14px;font-family:var(--font);" placeholder="学号"><input style="background:none;border:none;color:#fff;width:100%;outline:none;font-size:14px;font-family:var(--font);margin-top:8px;" type="password" placeholder="密码"></div>'+
+    '<button class="btn btn-primary" style="width:100%;height:44px;border-radius:12px;">登录</button></div>',
+    courses:`<div style="padding:12px;"><div style="background:rgba(255,255,255,0.9);border-radius:12px;padding:10px;margin-bottom:10px;">`+
+    '<input style="width:100%;border:none;background:rgba(139,92,246,0.06);border-radius:8px;padding:10px;font-size:13px;outline:none;font-family:var(--font);" placeholder="&#128269; 搜索课程..."></div>'+
+    M.courses.slice(0,5).map(c=>`<div class="glass" style="padding:14px;margin-bottom:10px;border-radius:14px;"><div class="flex-between"><div style="font-size:14px;font-weight:600;">${c.name}</div>${c.enr>=c.cap?'<span class="tag tag-red" style="font-size:10px;">已满</span>':'<span class="tag tag-green" style="font-size:10px;">余'+(c.cap-c.enr)+'席</span>'}</div><div class="text-sec mt4">${c.teacher} &#11088;${c.rating} | ${c.time}</div><div class="text-sec">${c.loc} | ${c.credit}学分</div></div>`).join('')+'</div>',
+    schedule:`<div style="padding:12px;"><div style="font-size:15px;font-weight:600;margin-bottom:16px;text-align:center;">第 14 周</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;font-size:10px;text-align:center;margin-bottom:10px;">`+
+    '日一二三四五六'.split('').map(d=>`<div style="color:var(--text-muted);">${d}</div>`).join('')+'<div style="background:var(--brand-500);color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;margin:0 auto;">7</div>'+Array(5).fill('<div style="padding:4px 0;">').join('')+'</div>'+
+    [{n:'数据结构',t:'08:00-09:40',loc:'A-301',cls:''},{n:'英语(三)',t:'10:00-11:40',loc:'D-201',cls:'purple'},{n:'操作系统',t:'14:00-15:40',loc:'B-201',cls:'green'},{n:'概率论',t:'16:00-17:40',loc:'B-102',cls:'orange'}].map(c=>`<div class="glass" style="padding:12px;margin-bottom:8px;border-radius:12px;display:flex;align-items:center;gap:12px;"><div style="width:4px;height:36px;background:${c.cls==='green'?'var(--success)':c.cls==='orange'?'var(--warning)':c.cls==='purple'?'var(--purple)':'var(--brand-500)'};border-radius:2px;"></div><div><div style="font-size:13px;font-weight:600;">${c.n}</div><div class="text-sec">${c.t} | ${c.loc}</div></div></div>`).join('')+'</div>',
+    scores:`<div style="padding:12px;"><div style="display:flex;gap:10px;margin-bottom:16px;">`+
+    [{l:'平均 GPA',v:'3.62',c:'var(--brand-500)'},{l:'总学分',v:'13',c:'var(--success)'}].map(s=>`<div class="glass" style="flex:1;padding:14px;text-align:center;border-radius:14px;"><div style="font-size:24px;font-weight:700;color:${s.c};">${s.v}</div><div class="text-sec" style="font-size:11px;">${s.l}</div></div>`).join('')+
+    '</div>'+M.scores.map(s=>`<div class="glass" style="padding:12px;margin-bottom:8px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:13px;font-weight:600;">${s.cn}</div><div class="text-sec">${s.sem} | ${s.t}</div></div><div style="font-size:18px;font-weight:700;color:${s.s>=90?'var(--success)':s.s>=70?'var(--warning)':'var(--danger)'};">${s.s}</div></div>`).join('')+'</div>',
+  };
+  return '<div style="display:flex;justify-content:center;align-items:flex-start;min-height:calc(100vh-120px);">'+
+  '<div style="width:375px;max-width:100%;">'+
+  card('&#128241; 小程序预览','<div class="flex-row gap8"><button class="btn btn-outline btn-xs" onclick="mpNav(\'login\')">登录</button><button class="btn btn-primary btn-xs" onclick="mpNav(\'courses\')">选课</button><button class="btn btn-outline btn-xs" onclick="mpNav(\'schedule\')">课表</button><button class="btn btn-outline btn-xs" onclick="mpNav(\'scores\')">成绩</button></div>')+
+  '<div id="mp-screen" style="width:100%;background:#f8f6ff;border-radius:16px;border:8px solid #1a1a2e;overflow:hidden;min-height:600px;box-shadow:0 20px 60px rgba(0,0,0,0.2);">'+
+  '<div style="height:32px;background:#1a1a2e;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;">智教通小程序</div>'+
+  pages.login+'</div>'+ecard()+'</div></div>';
+};
+function mpNav(p){
+  const pages={
+    login:document.querySelector('#mp-screen').querySelector('div:nth-child(2)'),
+  };
+  const screen=document.getElementById('mp-screen');
+  if(!screen)return;
+  const content=screen.querySelector('div:nth-child(2)');
+  const pgs={
+    login:`<div style="padding:40px 30px 20px;background:linear-gradient(135deg,var(--brand-700),var(--brand-900));text-align:center;min-height:570px;">`+
+    '<div style="width:50px;height:50px;background:rgba(255,255,255,0.15);border-radius:14px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:22px;">&#9997;</div>'+
+    '<div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:20px;">智教通</div>'+
+    '<div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:12px;margin-bottom:10px;text-align:left;"><input style="background:none;border:none;color:#fff;width:100%;outline:none;font-size:14px;font-family:var(--font);" placeholder="学号"><div style="height:1px;background:rgba(255,255,255,0.1);margin:8px 0;"></div><input style="background:none;border:none;color:#fff;width:100%;outline:none;font-size:14px;font-family:var(--font);" type="password" placeholder="密码"></div>'+
+    '<button class="btn btn-primary" style="width:100%;height:44px;border-radius:12px;">登录</button></div>',
+    courses:`<div style="padding:12px;min-height:570px;"><div style="background:rgba(255,255,255,0.9);border-radius:12px;padding:10px;margin-bottom:10px;">`+
+    '<input style="width:100%;border:none;background:rgba(139,92,246,0.06);border-radius:8px;padding:10px;font-size:13px;outline:none;font-family:var(--font);" placeholder="&#128269; 搜索课程..."></div>'+
+    M.courses.slice(0,5).map(c=>`<div class="glass" style="padding:14px;margin-bottom:10px;border-radius:14px;"><div class="flex-between"><div style="font-size:14px;font-weight:600;">${c.name}</div>${c.enr>=c.cap?'<span class="tag tag-red" style="font-size:10px;">已满</span>':'<span class="tag tag-green" style="font-size:10px;">余'+(c.cap-c.enr)+'席</span>'}</div><div class="text-sec mt4">${c.teacher} &#11088;${c.rating} | ${c.time}</div><div class="text-sec">${c.loc} | ${c.credit}学分</div></div>`).join('')+'</div>',
+    schedule:`<div style="padding:12px;min-height:570px;"><div style="font-size:15px;font-weight:600;margin-bottom:12px;text-align:center;">第 14 周</div>`+
+    [{n:'数据结构',t:'08:00-09:40',loc:'A-301',cls:''},{n:'英语(三)',t:'10:00-11:40',loc:'D-201',cls:'purple'},{n:'操作系统',t:'14:00-15:40',loc:'B-201',cls:'green'},{n:'概率论',t:'16:00-17:40',loc:'B-102',cls:'orange'}].map(c=>`<div class="glass" style="padding:12px;margin-bottom:8px;border-radius:12px;display:flex;align-items:center;gap:12px;"><div style="width:4px;height:36px;background:${c.cls==='green'?'var(--success)':c.cls==='orange'?'var(--warning)':c.cls==='purple'?'var(--purple)':'var(--brand-500)'};border-radius:2px;"></div><div><div style="font-size:13px;font-weight:600;">${c.n}</div><div class="text-sec">${c.t} | ${c.loc}</div></div></div>`).join('')+'</div>',
+    scores:`<div style="padding:12px;min-height:570px;"><div style="display:flex;gap:10px;margin-bottom:12px;">`+
+    [{l:'平均 GPA',v:'3.62',c:'var(--brand-500)'},{l:'总学分',v:'13',c:'var(--success)'}].map(s=>`<div class="glass" style="flex:1;padding:14px;text-align:center;border-radius:14px;"><div style="font-size:24px;font-weight:700;color:${s.c};">${s.v}</div><div class="text-sec" style="font-size:11px;">${s.l}</div></div>`).join('')+
+    '</div>'+M.scores.map(s=>`<div class="glass" style="padding:12px;margin-bottom:8px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:13px;font-weight:600;">${s.cn}</div><div class="text-sec">${s.sem} | ${s.t}</div></div><div style="font-size:18px;font-weight:700;color:${s.s>=90?'var(--success)':s.s>=70?'var(--warning)':'var(--danger)'};">${s.s}</div></div>`).join('')+'</div>',
+  };
+  if(content&&pgs[p])content.innerHTML=pgs[p];
+}
+
+// ─── INIT ───
+document.addEventListener('click',function(e){if(e.target.classList.contains('modal'))e.target.classList.remove('show');});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.modal.show').forEach(m=>m.classList.remove('show'));});
+navTo('dashboard');
+</script>
+</body>
+</html>

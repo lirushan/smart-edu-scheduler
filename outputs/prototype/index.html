@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智教通 — 学生课程报名与排课管理系统 (原型 V1.0)</title>
+<style>
+/* ===== CSS Variables ===== */
+:root {
+  --primary: #4A90D9;
+  --primary-dark: #357ABD;
+  --primary-light: #E8F0FE;
+  --success: #52C41A;
+  --warning: #FA8C16;
+  --danger: #F5222D;
+  --purple: #722ED1;
+  --bg: #F0F2F5;
+  --bg-card: #FFFFFF;
+  --text: #262626;
+  --text-secondary: #8C8C8C;
+  --text-muted: #BFBFBF;
+  --border: #E8E8E8;
+  --shadow: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.1);
+  --radius: 8px;
+  --sidebar-w: 220px;
+  --header-h: 56px;
+  --transition: 0.2s ease;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font); font-size: 14px; color: var(--text); background: var(--bg); min-height: 100vh; }
+a { color: var(--primary); text-decoration: none; }
+a:hover { color: var(--primary-dark); }
+
+/* ===== Login Page ===== */
+.login-page {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+.login-card {
+  width: 420px; background: #fff; border-radius: 12px; padding: 48px 40px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.login-logo { text-align: center; margin-bottom: 32px; }
+.login-logo .icon { width: 56px; height: 56px; background: linear-gradient(135deg, var(--primary), var(--purple)); border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; color: #fff; margin-bottom: 12px; }
+.login-logo h1 { font-size: 22px; color: #1a1a2e; }
+.login-logo p { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
+
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; }
+.form-group input, .form-group select {
+  width: 100%; height: 42px; padding: 0 14px; border: 1px solid var(--border); border-radius: var(--radius);
+  font-size: 14px; transition: var(--transition); outline: none; background: #FAFAFA;
+}
+.form-group input:focus, .form-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); background: #fff; }
+.form-group .role-selector { display: flex; gap: 8px; }
+.form-group .role-btn {
+  flex: 1; height: 38px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: #fff; cursor: pointer; font-size: 13px; transition: var(--transition); color: var(--text-secondary);
+}
+.form-group .role-btn:hover { border-color: var(--primary); color: var(--primary); }
+.form-group .role-btn.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); font-weight: 600; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 20px; height: 42px; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; transition: var(--transition); }
+.btn-primary { background: var(--primary); color: #fff; width: 100%; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-outline { background: #fff; color: var(--primary); border: 1px solid var(--primary); }
+.btn-outline:hover { background: var(--primary-light); }
+.btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+.btn-xs { height: 26px; padding: 0 10px; font-size: 12px; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: #D91B1B; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-warning { background: var(--warning); color: #fff; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ===== Layout ===== */
+.app-layout { display: flex; min-height: 100vh; }
+.sidebar {
+  width: var(--sidebar-w); background: #001529; color: #fff;
+  position: fixed; left: 0; top: 0; bottom: 0; z-index: 100;
+  display: flex; flex-direction: column;
+}
+.sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+.sidebar-header .s-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary), var(--purple)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.sidebar-header h2 { font-size: 16px; white-space: nowrap; }
+.sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+.sidebar-nav .nav-section { padding: 8px 20px 4px; font-size: 11px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; }
+.sidebar-nav .nav-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+  color: rgba(255,255,255,0.65); cursor: pointer; transition: var(--transition);
+  font-size: 14px; border-left: 3px solid transparent; margin: 2px 0;
+}
+.sidebar-nav .nav-item:hover { color: #fff; background: rgba(255,255,255,0.06); }
+.sidebar-nav .nav-item.active { color: #fff; background: var(--primary); border-left-color: #fff; }
+.sidebar-nav .nav-item .nav-icon { width: 20px; text-align: center; font-size: 16px; }
+.sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.sidebar-footer:hover { background: rgba(255,255,255,0.06); }
+.sidebar-footer .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; flex-shrink: 0; }
+.sidebar-footer .user-info { flex: 1; min-width: 0; }
+.sidebar-footer .user-name { font-size: 13px; color: #fff; }
+.sidebar-footer .user-role { font-size: 11px; color: rgba(255,255,255,0.45); }
+
+.main-content { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+.header {
+  height: var(--header-h); background: #fff; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 24px;
+  position: sticky; top: 0; z-index: 50;
+}
+.header .breadcrumb { font-size: 14px; color: var(--text-secondary); }
+.header .breadcrumb span { color: var(--text); }
+.header .header-actions { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+.header .badge-dot { position: relative; cursor: pointer; font-size: 18px; color: var(--text-secondary); }
+.header .badge-dot .dot { position: absolute; top: 0; right: 0; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; border: 2px solid #fff; }
+
+.page-content { padding: 24px; flex: 1; }
+
+/* ===== Cards & Panels ===== */
+.card { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 20px; }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.card-title { font-size: 16px; font-weight: 600; }
+
+/* Stats Row */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.stat-card {
+  background: #fff; border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 20px; display: flex; align-items: center; gap: 16px;
+}
+.stat-card .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.stat-card .stat-icon.blue { background: var(--primary-light); color: var(--primary); }
+.stat-card .stat-icon.green { background: #E6FFFB; color: var(--success); }
+.stat-card .stat-icon.orange { background: #FFF7E6; color: var(--warning); }
+.stat-card .stat-icon.purple { background: #F9F0FF; color: var(--purple); }
+.stat-card .stat-value { font-size: 28px; font-weight: 700; }
+.stat-card .stat-label { font-size: 13px; color: var(--text-secondary); }
+
+/* ===== Tables ===== */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+table th { background: #FAFAFA; padding: 12px 14px; text-align: left; font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid var(--border); white-space: nowrap; }
+table td { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+table tbody tr:hover { background: #FAFAFA; }
+
+/* ===== Tags ===== */
+.tag { display: inline-block; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+.tag-blue { background: var(--primary-light); color: var(--primary); }
+.tag-green { background: #E6FFFB; color: var(--success); }
+.tag-orange { background: #FFF7E6; color: var(--warning); }
+.tag-red { background: #FFF1F0; color: var(--danger); }
+.tag-purple { background: #F9F0FF; color: var(--purple); }
+.tag-gray { background: #F5F5F5; color: var(--text-secondary); }
+
+/* ===== Search Bar ===== */
+.search-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+.search-bar input, .search-bar select {
+  height: 36px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius);
+  font-size: 13px; outline: none; background: #fff;
+}
+.search-bar input:focus, .search-bar select:focus { border-color: var(--primary); }
+.search-bar input { width: 220px; }
+
+/* ===== Schedule Grid ===== */
+.schedule-grid { display: grid; grid-template-columns: 50px repeat(7, 1fr); gap: 2px; font-size: 12px; }
+.schedule-grid .sg-header { background: #FAFAFA; padding: 8px; text-align: center; font-weight: 600; color: var(--text-secondary); border-radius: 4px; }
+.schedule-grid .sg-time { background: #FAFAFA; padding: 8px; text-align: center; color: var(--text-secondary); font-size: 11px; border-radius: 4px; }
+.schedule-grid .sg-cell {
+  min-height: 64px; background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 4px;
+  cursor: pointer; transition: var(--transition);
+}
+.schedule-grid .sg-cell:hover { box-shadow: var(--shadow); }
+.schedule-grid .sg-course {
+  background: var(--primary-light); border-radius: 3px; padding: 4px 6px;
+  margin-bottom: 2px; border-left: 3px solid var(--primary); font-size: 11px;
+  cursor: pointer;
+}
+.schedule-grid .sg-course.green { background: #E6FFFB; border-color: var(--success); }
+.schedule-grid .sg-course.orange { background: #FFF7E6; border-color: var(--warning); }
+.schedule-grid .sg-course.purple { background: #F9F0FF; border-color: var(--purple); }
+
+/* ===== Course Cards Grid ===== */
+.course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+.course-card {
+  background: #fff; border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 20px; cursor: pointer; transition: var(--transition); border: 2px solid transparent;
+}
+.course-card:hover { border-color: var(--primary); box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+.course-card .cc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.course-card .cc-title { font-size: 15px; font-weight: 600; flex: 1; }
+.course-card .cc-meta { display: flex; gap: 16px; font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
+.course-card .cc-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border); }
+.course-card .cc-capacity { font-size: 13px; color: var(--text-secondary); }
+.course-card .cc-capacity strong { color: var(--primary); }
+
+/* ===== Modal ===== */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200;
+  display: flex; align-items: center; justify-content: center; display: none;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: #fff; border-radius: 12px; box-shadow: var(--shadow-lg);
+  width: 600px; max-height: 80vh; overflow-y: auto; animation: modalIn 0.2s ease;
+}
+@keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(-10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.modal-header h3 { font-size: 17px; }
+.modal-close { width: 32px; height: 32px; border: none; background: none; font-size: 20px; cursor: pointer; color: var(--text-secondary); border-radius: 6px; }
+.modal-close:hover { background: #F5F5F5; }
+.modal-body { padding: 20px 24px; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+/* ===== Filters ===== */
+.filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.filter-bar select, .filter-bar input { height: 36px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; outline: none; }
+.filter-bar select:focus, .filter-bar input:focus { border-color: var(--primary); }
+
+/* ===== Misc ===== */
+.pagination { display: flex; justify-content: center; gap: 6px; margin-top: 16px; }
+.pagination button { min-width: 32px; height: 32px; border: 1px solid var(--border); background: #fff; border-radius: 4px; cursor: pointer; font-size: 13px; }
+.pagination button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.pagination button:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+
+.tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 16px; }
+.tabs .tab { padding: 10px 20px; cursor: pointer; color: var(--text-secondary); font-size: 14px; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: var(--transition); }
+.tabs .tab:hover { color: var(--primary); }
+.tabs .tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+.alert { padding: 12px 16px; border-radius: var(--radius); margin-bottom: 16px; font-size: 13px; }
+.alert-info { background: var(--primary-light); color: var(--primary); border: 1px solid rgba(74,144,217,0.2); }
+.alert-warning { background: #FFF7E6; color: var(--warning); border: 1px solid rgba(250,140,22,0.2); }
+.alert-success { background: #E6FFFB; color: var(--success); border: 1px solid rgba(82,196,26,0.2); }
+
+.tooltip { position: relative; }
+.progress-bar { height: 6px; background: #F0F0F0; border-radius: 3px; overflow: hidden; }
+.progress-bar .fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.progress-bar .fill.blue { background: var(--primary); }
+.progress-bar .fill.green { background: var(--success); }
+.progress-bar .fill.orange { background: var(--warning); }
+
+/* Exam page */
+.exam-sidebar { width: 240px; background: #fff; border-right: 1px solid var(--border); padding: 16px; position: fixed; top: var(--header-h); bottom: 0; overflow-y: auto; }
+.exam-sidebar .qs-item { padding: 8px 12px; margin: 2px 0; border-radius: 4px; cursor: pointer; font-size: 13px; color: var(--text-secondary); }
+.exam-sidebar .qs-item:hover { background: #F5F5F5; }
+.exam-sidebar .qs-item.done { color: var(--success); }
+.exam-sidebar .qs-item.current { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+.exam-content { margin-left: 240px; padding: 24px; }
+.exam-timer { display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; background: #FFF1F0; color: var(--danger); border-radius: 20px; font-weight: 600; font-size: 14px; }
+
+@media (max-width: 1200px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main-content { margin-left: 0; }
+  .stats-row { grid-template-columns: 1fr; }
+  .course-grid { grid-template-columns: 1fr; }
+}
+
+.hidden { display: none !important; }
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.mt-16 { margin-top: 16px; }
+.mb-16 { margin-bottom: 16px; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.gap-8 { gap: 8px; }
+.text-secondary { color: var(--text-secondary); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN PAGE ==================== -->
+<div id="page-login" class="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="icon">📚</div>
+      <h1>智 教 通</h1>
+      <p>学生课程报名与排课管理系统</p>
+    </div>
+    <div class="form-group">
+      <label>登录账号</label>
+      <input type="text" id="login-username" placeholder="请输入学号/工号" value="2024001001">
+    </div>
+    <div class="form-group">
+      <label>登录密码</label>
+      <input type="password" id="login-password" placeholder="请输入密码" value="password">
+    </div>
+    <div class="form-group">
+      <label>角色选择</label>
+      <div class="role-selector" id="role-selector">
+        <button class="role-btn active" data-role="student">🎓 学生</button>
+        <button class="role-btn" data-role="teacher">👨‍🏫 教师</button>
+        <button class="role-btn" data-role="admin">⚙️ 管理员</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="doLogin()">登 录</button>
+    <p style="text-align:center;margin-top:16px;font-size:12px;color:var(--text-muted)">
+      原型演示 — 点击登录即可体验各角色功能
+    </p>
+  </div>
+</div>
+
+<!-- ==================== MAIN APP ==================== -->
+<div id="app-main" class="app-layout hidden">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="s-icon">📚</div>
+      <h2>智教通</h2>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-footer" onclick="doLogout()">
+      <div class="avatar" id="sidebar-avatar">S</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebar-name">张同学</div>
+        <div class="user-role" id="sidebar-role">学生</div>
+      </div>
+      <span style="color:rgba(255,255,255,0.35);">🚪</span>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+    <header class="header">
+      <div class="breadcrumb" id="breadcrumb">🏠 工作台</div>
+      <div class="header-actions">
+        <span class="badge-dot" title="消息通知">🔔<span class="dot"></span></span>
+        <span style="font-size:13px;color:var(--text-secondary);" id="header-time"></span>
+      </div>
+    </header>
+    <div class="page-content" id="page-content"></div>
+  </main>
+</div>
+
+<!-- ==================== MODALS ==================== -->
+<div class="modal-overlay" id="modal-course-detail">
+  <div class="modal" style="width:680px;">
+    <div class="modal-header">
+      <h3 id="modal-course-title">课程详情</h3>
+      <button class="modal-close" onclick="closeModal('modal-course-detail')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-course-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-course-detail')">关闭</button>
+      <button class="btn btn-primary btn-sm" id="btn-enroll" onclick="doEnroll()">立即选课</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal" style="width:420px;">
+    <div class="modal-header">
+      <h3>提示</h3>
+      <button class="modal-close" onclick="closeModal('modal-confirm')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-confirm-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-confirm')">取消</button>
+      <button class="btn btn-primary btn-sm" id="btn-confirm-ok">确认</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== GLOBAL STATE ====================
+const STATE = {
+  role: 'student',
+  user: null,
+  currentPage: 'dashboard',
+  currentCourse: null,
+  examTimer: null,
+};
+
+// ==================== MOCK DATA ====================
+const MOCK = {
+  students: [
+    { id: 1, username: '2024001001', name: '张明远', role: 'student', department: '计算机科学与技术学院', major: '计算机科学与技术', grade: '2024', avatar: '张' },
+    { id: 2, username: '2024001002', name: '李思雨', role: 'student', department: '计算机科学与技术学院', major: '软件工程', grade: '2024', avatar: '李' },
+  ],
+  teachers: [
+    { id: 100, username: 'T2020001', name: '赵教授', role: 'teacher', department: '计算机科学与技术学院', title: '教授', avatar: '赵' },
+    { id: 101, username: 'T2020002', name: '钱副教授', role: 'teacher', department: '数学与统计学院', title: '副教授', avatar: '钱' },
+  ],
+  admins: [
+    { id: 200, username: 'admin', name: '系统管理员', role: 'admin', avatar: '管' },
+  ],
+  courses: [
+    { id: 1, code: 'CS101', name: '数据结构与算法', credit: 4, hours: 64, type: '必修', category: '工学/计算机', department: '计算机科学与技术学院',
+      teacher: '赵教授', rating: 4.8, capacity: 80, enrolled: 67, time: '周一 1-2节, 周三 3-4节', location: '教学楼A-301',
+      tags: ['核心课程', '双语教学'], prerequisite: '程序设计基础',
+      desc: '本课程系统讲授线性表、树、图等基本数据结构及其算法设计与分析，培养学生的算法思维和编程实践能力。' },
+    { id: 2, code: 'CS201', name: '操作系统', credit: 3, hours: 48, type: '必修', category: '工学/计算机', department: '计算机科学与技术学院',
+      teacher: '钱副教授', rating: 4.5, capacity: 60, enrolled: 58, time: '周二 5-6节, 周四 1-2节', location: '实验楼B-201',
+      tags: ['核心课程'], prerequisite: '计算机组成原理',
+      desc: '介绍操作系统的基本原理与设计方法，涵盖进程管理、内存管理、文件系统和I/O系统等核心内容。' },
+    { id: 3, code: 'CS301', name: '人工智能导论', credit: 3, hours: 48, type: '专业选修', category: '工学/计算机', department: '计算机科学与技术学院',
+      teacher: '赵教授', rating: 4.9, capacity: 100, enrolled: 100, time: '周一 7-8节, 周三 7-8节', location: '教学楼C-501',
+      tags: ['热门', '校企合作'], prerequisite: '',
+      desc: '全面介绍人工智能的核心理论和方法，包括搜索、推理、机器学习、深度学习等前沿话题。' },
+    { id: 4, code: 'MATH201', name: '概率论与数理统计', credit: 3, hours: 48, type: '必修', category: '理学/数学', department: '数学与统计学院',
+      teacher: '钱副教授', rating: 4.3, capacity: 90, enrolled: 45, time: '周三 1-2节, 周五 3-4节', location: '教学楼B-102',
+      tags: [], prerequisite: '高等数学',
+      desc: '讲授概率论基础与数理统计方法，包括随机变量、分布理论、参数估计和假设检验等。' },
+    { id: 5, code: 'EN101', name: '大学英语(三)', credit: 2, hours: 32, type: '必修', category: '语言与文学', department: '外国语学院',
+      teacher: '孙讲师', rating: 4.2, capacity: 50, enrolled: 32, time: '周二 3-4节', location: '外语楼D-201',
+      tags: [], prerequisite: '大学英语(二)',
+      desc: '提升学生的英语综合应用能力，侧重学术英语阅读与写作训练。' },
+    { id: 6, code: 'PE101', name: '篮球', credit: 1, hours: 32, type: '体育', category: '体育与健康', department: '体育部',
+      teacher: '周教练', rating: 4.6, capacity: 40, enrolled: 38, time: '周四 7-8节', location: '体育馆-篮球场',
+      tags: ['热门'], prerequisite: '',
+      desc: '学习篮球基本技术和战术配合，提升团队协作能力和身体素质。' },
+    { id: 7, code: 'CS401', name: '软件工程', credit: 3, hours: 48, type: '专业选修', category: '工学/计算机', department: '计算机科学与技术学院',
+      teacher: '赵教授', rating: 4.4, capacity: 80, enrolled: 42, time: '周五 1-2节, 周五 5-6节', location: '教学楼A-201',
+      tags: ['创新创业'], prerequisite: '程序设计基础',
+      desc: '介绍软件工程的基本概念、开发流程和项目管理方法，包括敏捷开发、需求分析、设计模式等。' },
+    { id: 8, code: 'HIST101', name: '中国近现代史纲要', credit: 2, hours: 32, type: '通识选修', category: '人文与社会', department: '马克思主义学院',
+      teacher: '吴副教授', rating: 4.1, capacity: 120, enrolled: 75, time: '周三 5-6节', location: '教学楼A-101',
+      tags: [], prerequisite: '',
+      desc: '系统介绍中国近现代史的发展脉络和重大事件，培养学生的历史思维和爱国情怀。' },
+  ],
+  myEnrollments: [
+    { courseId: 1, round: 1, status: '已选中', time: '2026-06-15 10:23:15' },
+    { courseId: 2, round: 2, status: '已选中', time: '2026-06-20 14:05:42' },
+    { courseId: 4, round: 1, status: '已选中', time: '2026-06-15 10:25:30' },
+    { courseId: 5, round: 2, status: '已选中', time: '2026-06-20 14:10:18' },
+    { courseId: 6, round: 2, status: '待抽签', time: '2026-06-20 14:08:55' },
+  ],
+  scores: [
+    { courseName: '数据结构与算法', score: 92, gpa: 4.0, type: '正常', semester: '2025-2026-1', teacher: '赵教授' },
+    { courseName: '操作系统', score: 85, gpa: 3.3, type: '正常', semester: '2025-2026-1', teacher: '钱副教授' },
+    { courseName: '高等数学(二)', score: 78, gpa: 2.7, type: '正常', semester: '2025-2026-1', teacher: '李教授' },
+    { courseName: '程序设计基础', score: 95, gpa: 4.0, type: '正常', semester: '2024-2025-2', teacher: '王副教授' },
+    { courseName: '大学物理(一)', score: 72, gpa: 2.3, type: '补考', semester: '2024-2025-2', teacher: '刘教授' },
+  ],
+  exams: [
+    { id: 1, name: '数据结构期中考试', type: '期中', course: '数据结构与算法', startTime: '2026-07-15 09:00', duration: 120, status: '未开始', totalScore: 100, passScore: 60 },
+    { id: 2, name: '操作系统期末模拟', type: '模拟', course: '操作系统', startTime: '2026-07-08 14:00', duration: 90, status: '未开始', totalScore: 100, passScore: 60 },
+    { id: 3, name: '高等数学单元测试', type: '单元测', course: '高等数学(二)', startTime: '2026-06-25 10:00', duration: 60, status: '已结束', totalScore: 50, passScore: 30, myScore: 42 },
+  ],
+  questions: [
+    { id: 1, type: '单选题', content: '以下哪种数据结构具有"后进先出"的特点？', subject: '数据结构', kp: '栈与队列', difficulty: 0.3, options: ['A. 队列', 'B. 栈', 'C. 链表', 'D. 树'], answer: 'B' },
+    { id: 2, type: '单选题', content: '在二叉搜索树中，中序遍历的结果是？', subject: '数据结构', kp: '树与二叉树', difficulty: 0.5, options: ['A. 无序序列', 'B. 降序序列', 'C. 升序序列', 'D. 不确定'], answer: 'C' },
+    { id: 3, type: '判断题', content: '哈希表查找的平均时间复杂度为O(1)。', subject: '数据结构', kp: '哈希表', difficulty: 0.2, options: ['正确', '错误'], answer: '正确' },
+    { id: 4, type: '多选题', content: '以下哪些属于进程调度算法？', subject: '操作系统', kp: '进程调度', difficulty: 0.4, options: ['A. FCFS', 'B. SJF', 'C. LRU', 'D. Round Robin', 'E. SSTF'], answer: 'A,B,D' },
+    { id: 5, type: '填空题', content: '在Java中，垃圾回收器通过____算法判断对象是否可达。', subject: '程序设计', kp: 'JVM', difficulty: 0.6, answer: '可达性分析' },
+  ],
+};
+
+// ==================== INIT ====================
+function updateClock() {
+  const now = new Date();
+  document.getElementById('header-time').textContent =
+    now.toLocaleDateString('zh-CN', { year:'numeric', month:'long', day:'numeric', weekday:'long' }) +
+    ' ' + now.toLocaleTimeString('zh-CN', { hour:'2-digit', minute:'2-digit' });
+}
+setInterval(updateClock, 30000);
+updateClock();
+
+// ==================== LOGIN ====================
+document.querySelectorAll('#role-selector .role-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('#role-selector .role-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    STATE.role = this.dataset.role;
+  });
+});
+
+function doLogin() {
+  const uname = document.getElementById('login-username').value;
+  const pwd = document.getElementById('login-password').value;
+
+  let user = null;
+  if (STATE.role === 'student') user = MOCK.students.find(s => s.username === uname);
+  else if (STATE.role === 'teacher') user = MOCK.teachers.find(t => t.username === uname);
+  else user = MOCK.admins.find(a => a.username === uname);
+
+  if (!user) {
+    alert('账号不存在！\n\n试试这些演示账号：\n学生: 2024001001\n教师: T2020001\n管理员: admin');
+    return;
+  }
+
+  STATE.user = user;
+  STATE.role = user.role;
+
+  // Switch view
+  document.getElementById('page-login').classList.add('hidden');
+  document.getElementById('app-main').classList.remove('hidden');
+
+  // Setup sidebar
+  document.getElementById('sidebar-avatar').textContent = user.avatar;
+  document.getElementById('sidebar-name').textContent = user.name;
+  document.getElementById('sidebar-role').textContent =
+    user.role === 'student' ? '学生' : user.role === 'teacher' ? '教师' : '管理员';
+
+  buildSidebar();
+  navigateTo('dashboard');
+}
+
+function doLogout() {
+  STATE.user = null;
+  STATE.currentPage = '';
+  document.getElementById('app-main').classList.add('hidden');
+  document.getElementById('page-login').classList.remove('hidden');
+}
+
+// ==================== SIDEBAR ====================
+function buildSidebar() {
+  const nav = document.getElementById('sidebar-nav');
+  let items = [];
+
+  if (STATE.role === 'student') {
+    items = [
+      { section: '主菜单' },
+      { id: 'dashboard', icon: '🏠', label: '工作台' },
+      { id: 'course-market', icon: '📖', label: '课程广场' },
+      { id: 'my-schedule', icon: '📅', label: '我的课表' },
+      { id: 'my-enrollments', icon: '📋', label: '我的选课' },
+      { section: '学习' },
+      { id: 'my-scores', icon: '📊', label: '我的成绩' },
+      { id: 'exam-center', icon: '📝', label: '考试中心' },
+    ];
+  } else if (STATE.role === 'teacher') {
+    items = [
+      { section: '主菜单' },
+      { id: 'dashboard', icon: '🏠', label: '工作台' },
+      { id: 'my-schedule', icon: '📅', label: '我的课表' },
+      { section: '教学管理' },
+      { id: 'score-entry', icon: '📊', label: '成绩录入' },
+      { id: 'question-bank', icon: '📚', label: '题库管理' },
+      { id: 'course-apply', icon: '📖', label: '课程申报' },
+    ];
+  } else if (STATE.role === 'admin') {
+    items = [
+      { section: '主菜单' },
+      { id: 'dashboard', icon: '🏠', label: '工作台' },
+      { section: '管理' },
+      { id: 'user-mgmt', icon: '👥', label: '用户管理' },
+      { id: 'course-approval', icon: '✅', label: '课程审核' },
+      { id: 'round-config', icon: '⚙️', label: '选课轮次配置' },
+      { id: 'sys-monitor', icon: '📡', label: '系统监控' },
+    ];
+  }
+
+  nav.innerHTML = items.map(item => {
+    if (item.section) return `<div class="nav-section">${item.section}</div>`;
+    return `<div class="nav-item${STATE.currentPage === item.id ? ' active' : ''}" data-page="${item.id}" onclick="navigateTo('${item.id}')">
+      <span class="nav-icon">${item.icon}</span>${item.label}
+    </div>`;
+  }).join('');
+}
+
+// ==================== NAVIGATION ====================
+function navigateTo(page) {
+  STATE.currentPage = page;
+
+  // Update sidebar active
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.page === page);
+  });
+
+  // Update breadcrumb
+  const breadMap = {
+    'dashboard': '🏠 工作台',
+    'course-market': '📖 课程广场',
+    'my-schedule': '📅 我的课表',
+    'my-enrollments': '📋 我的选课',
+    'my-scores': '📊 我的成绩',
+    'exam-center': '📝 考试中心',
+    'score-entry': '📊 成绩录入',
+    'question-bank': '📚 题库管理',
+    'course-apply': '📖 课程申报',
+    'user-mgmt': '👥 用户管理',
+    'course-approval': '✅ 课程审核',
+    'round-config': '⚙️ 选课轮次配置',
+    'sys-monitor': '📡 系统监控',
+  };
+  document.getElementById('breadcrumb').innerHTML = breadMap[page] || page;
+
+  // Render page
+  const content = document.getElementById('page-content');
+  const renderer = pageRenderers[page];
+  content.innerHTML = renderer ? renderer() : '<div class="card"><p>页面开发中...</p></div>';
+
+  // Init page scripts
+  if (page === 'exam-center') initExamPage();
+}
+
+// ==================== PAGE RENDERERS ====================
+const pageRenderers = {
+  // ========== STUDENT: DASHBOARD ==========
+  'dashboard': function() {
+    if (STATE.role === 'student') return renderStudentDashboard();
+    if (STATE.role === 'teacher') return renderTeacherDashboard();
+    if (STATE.role === 'admin') return renderAdminDashboard();
+    return '';
+  },
+
+  // ========== STUDENT: COURSE MARKET ==========
+  'course-market': function() {
+    return `
+      <div class="alert alert-info">📢 当前选课轮次：<strong>二轮补退选（抢课制）</strong> | 时间：2026-07-01 ~ 2026-07-10 | 剩余名额先到先得！</div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">课程广场</span>
+          <span style="font-size:13px;color:var(--text-secondary);">共 ${MOCK.courses.length} 门课程</span>
+        </div>
+        <div class="filter-bar">
+          <select onchange="filterCourses()" id="filter-type"><option value="">全部类型</option><option>必修</option><option>专业选修</option><option>通识选修</option><option>体育</option></select>
+          <select onchange="filterCourses()" id="filter-category"><option value="">全部分类</option><option>工学/计算机</option><option>理学/数学</option><option>语言与文学</option><option>体育与健康</option><option>人文与社会</option></select>
+          <select onchange="filterCourses()" id="filter-capacity"><option value="">名额状态</option><option value="has">有名额</option><option value="full">已满</option></select>
+          <input type="text" placeholder="🔍 搜索课程名称或教师..." oninput="filterCourses()" id="filter-search">
+        </div>
+        <div class="course-grid" id="course-grid">${renderCourseCards(MOCK.courses)}</div>
+      </div>
+    `;
+  },
+
+  // ========== STUDENT: MY SCHEDULE ==========
+  'my-schedule': function() {
+    const enrolled = MOCK.myEnrollments.filter(e => e.status === '已选中');
+    const myCourses = enrolled.map(e => MOCK.courses.find(c => c.id === e.courseId)).filter(Boolean);
+    return `
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">我的课表 — 2025-2026 学年第二学期</span>
+          <div class="flex-between gap-8">
+            <button class="btn btn-outline btn-sm">📷 导出图片</button>
+            <button class="btn btn-outline btn-sm">📅 导出iCal</button>
+          </div>
+        </div>
+        <div class="schedule-grid" style="margin-top:12px;">
+          <div class="sg-header">节次</div>
+          <div class="sg-header">周一</div><div class="sg-header">周二</div><div class="sg-header">周三</div>
+          <div class="sg-header">周四</div><div class="sg-header">周五</div><div class="sg-header">周六</div><div class="sg-header">周日</div>
+          ${generateScheduleCells(myCourses)}
+        </div>
+        <div style="margin-top:16px;display:flex;gap:20px;font-size:12px;color:var(--text-secondary);">
+          <span>🟦 数据结构与算法</span><span>🟩 操作系统</span><span>🟧 概率论与数理统计</span><span>🟪 大学英语(三)</span>
+        </div>
+      </div>
+    `;
+  },
+
+  // ========== STUDENT: MY ENROLLMENTS ==========
+  'my-enrollments': function() {
+    const rows = MOCK.myEnrollments.map(e => {
+      const c = MOCK.courses.find(c => c.id === e.courseId);
+      return c ? { ...e, course: c } : null;
+    }).filter(Boolean);
+    return `
+      <div class="card">
+        <div class="card-header"><span class="card-title">我的选课记录</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>课程编码</th><th>课程名称</th><th>类型</th><th>学分</th><th>教师</th><th>上课时间</th><th>选课状态</th><th>操作时间</th><th>操作</th></tr></thead>
+            <tbody>${rows.map(r => `
+              <tr>
+                <td>${r.course.code}</td>
+                <td><strong>${r.course.name}</strong></td>
+                <td><span class="tag tag-blue">${r.course.type}</span></td>
+                <td>${r.course.credit}</td>
+                <td>${r.course.teacher}</td>
+                <td style="font-size:12px;">${r.course.time}</td>
+                <td>${r.status === '已选中' ? '<span class="tag tag-green">已选中</span>' : '<span class="tag tag-orange">待抽签</span>'}</td>
+                <td style="font-size:12px;">${r.time}</td>
+                <td>${r.status === '已选中' ? '<button class="btn btn-danger btn-xs" onclick="confirmDrop('+r.courseId+')">退课</button>' : '-'}</td>
+              </tr>
+            `).join('')}</tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">学分统计</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;">
+          <div>
+            <div style="font-size:13px;color:var(--text-secondary);margin-bottom:4px;">必修学分</div>
+            <div style="font-size:24px;font-weight:700;color:var(--primary);">10/18</div>
+            <div class="progress-bar mt-16"><div class="fill blue" style="width:56%"></div></div>
+          </div>
+          <div>
+            <div style="font-size:13px;color:var(--text-secondary);margin-bottom:4px;">选修学分</div>
+            <div style="font-size:24px;font-weight:700;color:var(--success);">3/8</div>
+            <div class="progress-bar mt-16"><div class="fill green" style="width:38%"></div></div>
+          </div>
+          <div>
+            <div style="font-size:13px;color:var(--text-secondary);margin-bottom:4px;">已获GPA</div>
+            <div style="font-size:24px;font-weight:700;color:var(--warning);">3.62</div>
+            <div class="progress-bar mt-16"><div class="fill orange" style="width:72%"></div></div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  // ========== STUDENT: MY SCORES ==========
+  'my-scores': function() {
+    const gpa = (MOCK.scores.reduce((s,sc) => s + sc.gpa, 0) / MOCK.scores.length).toFixed(2);
+    return `
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-icon blue">📊</div><div><div class="stat-value">${gpa}</div><div class="stat-label">平均绩点</div></div></div>
+        <div class="stat-card"><div class="stat-icon green">✅</div><div><div class="stat-value">4</div><div class="stat-label">通过科目</div></div></div>
+        <div class="stat-card"><div class="stat-icon orange">📈</div><div><div class="stat-value">92</div><div class="stat-label">最高分</div></div></div>
+        <div class="stat-card"><div class="stat-icon purple">🏆</div><div><div class="stat-value">72</div><div class="stat-label">最低分</div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">成绩明细</span><button class="btn btn-outline btn-sm">📥 下载成绩单</button></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>学期</th><th>课程名称</th><th>授课教师</th><th>成绩</th><th>绩点</th><th>类型</th></tr></thead>
+            <tbody>${MOCK.scores.map(s => `
+              <tr>
+                <td>${s.semester}</td><td><strong>${s.courseName}</strong></td><td>${s.teacher}</td>
+                <td><strong style="color:${s.score>=90?'var(--success)':s.score>=70?'var(--warning)':'var(--danger)'}">${s.score}</strong></td>
+                <td>${s.gpa.toFixed(1)}</td>
+                <td>${s.type==='补考'?'<span class="tag tag-orange">补考</span>':'<span class="tag tag-green">正常</span>'}</td>
+              </tr>
+            `).join('')}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  },
+
+  // ========== STUDENT: EXAM CENTER ==========
+  'exam-center': function() {
+    return `
+      <div class="tabs">
+        <div class="tab active" onclick="switchExamTab('upcoming',this)">即将开始</div>
+        <div class="tab" onclick="switchExamTab('history',this)">历史考试</div>
+        <div class="tab" onclick="switchExamTab('self-test',this)">自主自测</div>
+      </div>
+      <div id="exam-tab-upcoming">
+        <div class="card">
+          <div class="card-header"><span class="card-title">即将开始的考试</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>考试名称</th><th>关联课程</th><th>类型</th><th>开始时间</th><th>时长</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody>${MOCK.exams.filter(e=>e.status==='未开始').map(e => `
+                <tr>
+                  <td><strong>${e.name}</strong></td><td>${e.course}</td>
+                  <td><span class="tag tag-blue">${e.type}</span></td>
+                  <td>${e.startTime}</td><td>${e.duration} 分钟</td>
+                  <td><span class="tag tag-gray">未开始</span></td>
+                  <td><button class="btn btn-primary btn-xs" onclick="startExam(${e.id})">进入考试</button></td>
+                </tr>
+              `).join('')}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="exam-tab-history" class="hidden">
+        <div class="card">
+          <div class="card-header"><span class="card-title">历史考试记录</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>考试名称</th><th>关联课程</th><th>类型</th><th>得分</th><th>状态</th></tr></thead>
+              <tbody>${MOCK.exams.filter(e=>e.status==='已结束').map(e => `
+                <tr>
+                  <td><strong>${e.name}</strong></td><td>${e.course}</td>
+                  <td><span class="tag tag-blue">${e.type}</span></td>
+                  <td><strong style="color:var(--success)">${e.myScore}/${e.totalScore}</strong></td>
+                  <td><span class="tag tag-green">已完成</span></td>
+                </tr>
+              `).join('')}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="exam-tab-self-test" class="hidden">
+        <div class="card">
+          <div class="card-header"><span class="card-title">自主自测（智能出卷）</span></div>
+          <p style="color:var(--text-secondary);margin-bottom:16px;">选择组卷模式和参数，系统将根据你的能力画像生成个性化试卷。</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:600px;">
+            <div class="form-group"><label>组卷模式</label><select style="width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);"><option>短板聚焦模式</option><option>均衡覆盖模式</option><option>难度自适应模式</option><option>错题重练模式</option><option>综合诊断模式</option><option>AI智能模式</option></select></div>
+            <div class="form-group"><label>科目范围</label><select style="width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);"><option>全部科目</option><option>数据结构与算法</option><option>操作系统</option><option>概率论与数理统计</option></select></div>
+            <div class="form-group"><label>题目数量</label><input type="number" value="20" style="width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);"></div>
+            <div class="form-group"><label>难度偏好</label><select style="width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);"><option>自适应</option><option>偏易</option><option>适中</option><option>偏难</option></select></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:12px;" onclick="alert('智能出卷引擎启动中...\\n\\n（原型演示 - 未来版本将接入AI模型实现真正的智能组卷）')">🤖 开始智能出卷</button>
+        </div>
+      </div>
+    `;
+  },
+
+  // ========== TEACHER: DASHBOARD ==========
+  'score-entry': function() {
+    return `
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">成绩录入</span>
+          <select style="height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);">
+            <option>数据结构与算法 — 2025-2026-1</option>
+            <option>人工智能导论 — 2025-2026-1</option>
+            <option>软件工程 — 2025-2026-1</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>学号</th><th>姓名</th><th>平时成绩(40%)</th><th>期末成绩(60%)</th><th>总评</th><th>状态</th></tr></thead>
+            <tbody>
+              <tr><td>2024001001</td><td>张明远</td><td><input type="number" value="90" style="width:70px;height:32px;padding:0 8px;border:1px solid var(--border);border-radius:4px;"></td><td><input type="number" value="93" style="width:70px;height:32px;padding:0 8px;border:1px solid var(--border);border-radius:4px;"></td><td style="font-weight:700;color:var(--success);">92</td><td><span class="tag tag-orange">草稿</span></td></tr>
+              <tr><td>2024001002</td><td>李思雨</td><td><input type="number" value="85" style="width:70px;height:32px;padding:0 8px;border:1px solid var(--border);border-radius:4px;"></td><td><input type="number" value="88" style="width:70px;height:32px;padding:0 8px;border:1px solid var(--border);border-radius:4px;"></td><td style="font-weight:700;color:var(--warning);">87</td><td><span class="tag tag-orange">草稿</span></td></tr>
+              <tr><td>2024001003</td><td>王磊</td><td><input type="number" value="72" style="width:70px;height:32px;padding:0 8px;border:1px solid var(--border);border-radius:4px;"></td><td><input type="number" value="65" style="width:70px;height:32px;padding:0 8px;border:1px solid var(--border);border-radius:4px;"></td><td style="font-weight:700;color:var(--danger);">68</td><td><span class="tag tag-orange">草稿</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end;">
+          <button class="btn btn-outline btn-sm">📥 导入Excel</button>
+          <button class="btn btn-primary btn-sm">💾 保存草稿</button>
+          <button class="btn btn-warning btn-sm">📤 提交审核</button>
+        </div>
+        <div class="alert alert-info" style="margin-top:16px;">💡 提示：总评成绩 = 平时成绩 × 40% + 期末成绩 × 60%，系统自动计算。</div>
+      </div>
+    `;
+  },
+
+  'question-bank': function() {
+    return `
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">题库管理</span>
+          <div class="flex-between gap-8">
+            <button class="btn btn-outline btn-sm">📥 批量导入</button>
+            <button class="btn btn-primary btn-sm">＋ 添加试题</button>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <select style="height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);"><option>全部题型</option><option>单选题</option><option>多选题</option><option>判断题</option><option>填空题</option></select>
+          <select style="height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);"><option>全部科目</option><option>数据结构与算法</option><option>操作系统</option><option>程序设计基础</option></select>
+          <select style="height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);"><option>全部难度</option><option>简单</option><option>中等</option><option>困难</option></select>
+          <input type="text" placeholder="🔍 搜索题目..." style="width:200px;height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>题型</th><th>题目内容</th><th>科目</th><th>知识点</th><th>难度</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody>${MOCK.questions.map(q => `
+              <tr>
+                <td>${q.id}</td>
+                <td><span class="tag tag-blue">${q.type}</span></td>
+                <td>${q.content.substring(0,30)}...</td>
+                <td>${q.subject}</td>
+                <td>${q.kp}</td>
+                <td>${q.difficulty <= 0.3 ? '<span class="tag tag-green">简单</span>' : q.difficulty <= 0.6 ? '<span class="tag tag-orange">中等</span>' : '<span class="tag tag-red">困难</span>'}</td>
+                <td><span class="tag tag-green">已通过</span></td>
+                <td><button class="btn btn-outline btn-xs">编辑</button> <button class="btn btn-danger btn-xs">禁用</button></td>
+              </tr>
+            `).join('')}</tbody>
+          </table>
+        </div>
+        <div class="pagination"><button class="active">1</button><button>2</button><button>3</button><button>...</button><button>12</button></div>
+      </div>
+    `;
+  },
+
+  'course-apply': function() {
+    return `
+      <div class="card">
+        <div class="card-header"><span class="card-title">课程申报</span></div>
+        <div style="max-width:600px;">
+          <div class="form-group"><label>课程名称</label><input type="text" placeholder="请输入课程名称" style="width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="form-group"><label>学分</label><input type="number" value="3" style="width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);"></div>
+            <div class="form-group"><label>学时</label><input type="number" value="48" style="width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="form-group"><label>课程类型</label><select style="width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);"><option>必修</option><option>专业选修</option><option>通识选修</option><option>体育</option></select></div>
+            <div class="form-group"><label>科目分类</label><select style="width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);"><option>工学/计算机</option><option>理学/数学</option></select></div>
+          </div>
+          <div class="form-group"><label>课程简介</label><textarea rows="4" placeholder="请输入课程简介..." style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:var(--font);"></textarea></div>
+          <div class="form-group"><label>教学大纲（可上传PDF/Word）</label><input type="file" style="width:100%;"></div>
+          <button class="btn btn-primary" onclick="alert('课程申报已提交！\\n待院系初审 → 教务处终审')">📤 提交申报</button>
+        </div>
+      </div>
+    `;
+  },
+
+  // ========== ADMIN: PAGES ==========
+  'user-mgmt': function() {
+    return `
+      <div class="card">
+        <div class="card-header"><span class="card-title">用户管理</span><button class="btn btn-primary btn-sm">＋ 新增用户</button></div>
+        <div class="filter-bar">
+          <select style="height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);"><option>全部角色</option><option>学生</option><option>教师</option><option>教务人员</option><option>管理员</option></select>
+          <select style="height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);"><option>全部状态</option><option>正常</option><option>禁用</option><option>锁定</option></select>
+          <input type="text" placeholder="🔍 搜索学号/姓名..." style="width:200px;height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>账号</th><th>姓名</th><th>角色</th><th>院系</th><th>状态</th><th>最后登录</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td>2024001001</td><td>张明远</td><td><span class="tag tag-blue">学生</span></td><td>计算机科学与技术学院</td><td><span class="tag tag-green">正常</span></td><td>2026-07-06 10:30</td><td><button class="btn btn-outline btn-xs">编辑</button> <button class="btn btn-danger btn-xs">禁用</button></td></tr>
+              <tr><td>2024001002</td><td>李思雨</td><td><span class="tag tag-blue">学生</span></td><td>计算机科学与技术学院</td><td><span class="tag tag-green">正常</span></td><td>2026-07-06 09:15</td><td><button class="btn btn-outline btn-xs">编辑</button> <button class="btn btn-danger btn-xs">禁用</button></td></tr>
+              <tr><td>T2020001</td><td>赵教授</td><td><span class="tag tag-purple">教师</span></td><td>计算机科学与技术学院</td><td><span class="tag tag-green">正常</span></td><td>2026-07-05 16:20</td><td><button class="btn btn-outline btn-xs">编辑</button> <button class="btn btn-danger btn-xs">禁用</button></td></tr>
+              <tr><td>T2020002</td><td>钱副教授</td><td><span class="tag tag-purple">教师</span></td><td>数学与统计学院</td><td><span class="tag tag-green">正常</span></td><td>2026-07-06 08:45</td><td><button class="btn btn-outline btn-xs">编辑</button> <button class="btn btn-danger btn-xs">禁用</button></td></tr>
+              <tr><td>2023005010</td><td>陈小龙</td><td><span class="tag tag-blue">学生</span></td><td>计算机科学与技术学院</td><td><span class="tag tag-red">禁用</span></td><td>2026-05-20 14:00</td><td><button class="btn btn-outline btn-xs">编辑</button> <button class="btn btn-success btn-xs">启用</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination"><button class="active">1</button><button>2</button><button>3</button><button>...</button><button>25</button></div>
+      </div>
+    `;
+  },
+
+  'course-approval': function() {
+    return `
+      <div class="card">
+        <div class="card-header"><span class="card-title">课程审核</span></div>
+        <div class="tabs">
+          <div class="tab active">待审核 (3)</div>
+          <div class="tab">已通过</div>
+          <div class="tab">已驳回</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>课程编码</th><th>课程名称</th><th>申报教师</th><th>学分</th><th>类型</th><th>申报时间</th><th>审核阶段</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>CS501</td><td><strong>云计算与大数据</strong></td><td>赵教授</td><td>3</td><td><span class="tag tag-blue">专业选修</span></td><td>2026-07-01</td><td><span class="tag tag-orange">院系初审</span></td>
+                <td><button class="btn btn-success btn-xs">通过</button> <button class="btn btn-danger btn-xs">驳回</button></td>
+              </tr>
+              <tr>
+                <td>CS502</td><td><strong>深度学习实践</strong></td><td>钱副教授</td><td>4</td><td><span class="tag tag-blue">专业选修</span></td><td>2026-07-02</td><td><span class="tag tag-orange">院系初审</span></td>
+                <td><button class="btn btn-success btn-xs">通过</button> <button class="btn btn-danger btn-xs">驳回</button></td>
+              </tr>
+              <tr>
+                <td>MATH301</td><td><strong>离散数学进阶</strong></td><td>钱副教授</td><td>3</td><td><span class="tag tag-blue">专业选修</span></td><td>2026-06-28</td><td><span class="tag tag-purple">教务处终审</span></td>
+                <td><button class="btn btn-success btn-xs">通过</button> <button class="btn btn-danger btn-xs">驳回</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  },
+
+  'round-config': function() {
+    return `
+      <div class="card">
+        <div class="card-header"><span class="card-title">选课轮次配置 — 2025-2026 学年第二学期</span><button class="btn btn-primary btn-sm">＋ 新增轮次</button></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>轮次</th><th>名称</th><th>类型</th><th>开始时间</th><th>结束时间</th><th>门数上限</th><th>学分上限</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>一轮初选</td><td><span class="tag tag-purple">抽签制</span></td><td>2026-06-15 09:00</td><td>2026-06-20 17:00</td><td>5</td><td>25</td><td><span class="tag tag-green">已结束</span></td><td><button class="btn btn-outline btn-xs">查看</button></td></tr>
+              <tr><td>2</td><td>二轮补退选</td><td><span class="tag tag-orange">抢课制</span></td><td>2026-07-01 09:00</td><td>2026-07-10 17:00</td><td>3</td><td>18</td><td><span class="tag tag-blue">进行中</span></td><td><button class="btn btn-outline btn-xs">编辑</button> <button class="btn btn-danger btn-xs">关闭</button></td></tr>
+              <tr><td>3</td><td>三轮退改选</td><td><span class="tag tag-blue">退改选</span></td><td>2026-07-15 09:00</td><td>2026-07-20 17:00</td><td>2</td><td>6</td><td><span class="tag tag-gray">未开始</span></td><td><button class="btn btn-outline btn-xs">编辑</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">抢课配置</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:600px;">
+          <div class="form-group"><label>IP限流（次/分钟）</label><input type="number" value="60" style="width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);"></div>
+          <div class="form-group"><label>用户限流（次/分钟）</label><input type="number" value="10" style="width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);"></div>
+          <div class="form-group"><label>抢课模式</label><select style="width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);"><option selected>正常模式</option><option>抢课模式（加大限流）</option><option>抽签模式</option></select></div>
+        </div>
+        <button class="btn btn-primary btn-sm" style="margin-top:8px;">💾 保存配置</button>
+      </div>
+    `;
+  },
+
+  'sys-monitor': function() {
+    return `
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-icon blue">⚡</div><div><div class="stat-value">856</div><div class="stat-label">当前 QPS</div></div></div>
+        <div class="stat-card"><div class="stat-icon green">👥</div><div><div class="stat-value">1,247</div><div class="stat-label">在线用户数</div></div></div>
+        <div class="stat-card"><div class="stat-icon orange">⏱️</div><div><div class="stat-value">180ms</div><div class="stat-label">平均响应时间</div></div></div>
+        <div class="stat-card"><div class="stat-icon purple">💾</div><div><div class="stat-value">42%</div><div class="stat-label">内存使用率</div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">系统服务状态</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>服务名称</th><th>状态</th><th>CPU</th><th>内存</th><th>运行时间</th></tr></thead>
+            <tbody>
+              <tr><td>选课服务 (×2)</td><td><span class="tag tag-green">正常</span></td><td>35%</td><td>42%</td><td>15d 6h</td></tr>
+              <tr><td>排课服务 (×2)</td><td><span class="tag tag-green">正常</span></td><td>12%</td><td>28%</td><td>15d 6h</td></tr>
+              <tr><td>考试服务 (×2)</td><td><span class="tag tag-green">正常</span></td><td>8%</td><td>22%</td><td>15d 6h</td></tr>
+              <tr><td>MySQL 主库</td><td><span class="tag tag-green">正常</span></td><td>45%</td><td>68%</td><td>30d 2h</td></tr>
+              <tr><td>Redis 集群</td><td><span class="tag tag-green">正常</span></td><td>10%</td><td>35%</td><td>30d 2h</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  },
+};
+
+// ==================== RENDER HELPERS ====================
+function renderStudentDashboard() {
+  const enrolled = MOCK.myEnrollments.filter(e => e.status === '已选中');
+  const enrolledCourses = enrolled.map(e => MOCK.courses.find(c => c.id === e.courseId)).filter(Boolean);
+  return `
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-icon blue">📖</div><div><div class="stat-value">${enrolled.length}</div><div class="stat-label">已选课程</div></div></div>
+      <div class="stat-card"><div class="stat-icon green">✅</div><div><div class="stat-value">13</div><div class="stat-label">已获学分</div></div></div>
+      <div class="stat-card"><div class="stat-icon orange">📊</div><div><div class="stat-value">3.62</div><div class="stat-label">平均绩点</div></div></div>
+      <div class="stat-card"><div class="stat-icon purple">⏰</div><div><div class="stat-value">2</div><div class="stat-label">即将考试</div></div></div>
+    </div>
+    <div class="alert alert-warning">⚠️ 二轮补退选正在进行中，截止时间：<strong>2026-07-10 17:00</strong>，请及时完成选课！</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="card">
+        <div class="card-header"><span class="card-title">📋 我的课程</span><a href="#" onclick="navigateTo('my-schedule');return false;" style="font-size:13px;">查看课表 →</a></div>
+        ${enrolledCourses.map(c => `
+          <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+            <div><strong>${c.name}</strong><br><span style="font-size:12px;color:var(--text-secondary);">${c.teacher} | ${c.time}</span></div>
+            <span class="tag tag-blue">${c.type}</span>
+          </div>
+        `).join('')}
+        ${enrolledCourses.length === 0 ? '<div class="empty-state"><div class="empty-icon">📭</div>暂无已选课程</div>' : ''}
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">📅 近期考试</span><a href="#" onclick="navigateTo('exam-center');return false;" style="font-size:13px;">查看全部 →</a></div>
+        ${MOCK.exams.filter(e=>e.status==='未开始').slice(0,3).map(e => `
+          <div style="padding:10px 0;border-bottom:1px solid var(--border);">
+            <strong>${e.name}</strong>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">${e.course} | ${e.startTime} | ${e.duration}分钟</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderTeacherDashboard() {
+  return `
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-icon blue">📖</div><div><div class="stat-value">3</div><div class="stat-label">授课课程</div></div></div>
+      <div class="stat-card"><div class="stat-icon green">👨‍🎓</div><div><div class="stat-value">189</div><div class="stat-label">学生总数</div></div></div>
+      <div class="stat-card"><div class="stat-icon orange">⭐</div><div><div class="stat-value">4.7</div><div class="stat-label">教学评分</div></div></div>
+      <div class="stat-card"><div class="stat-icon purple">📝</div><div><div class="stat-value">156</div><div class="stat-label">题库试题</div></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="card">
+        <div class="card-header"><span class="card-title">我的课程</span></div>
+        <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;"><div><strong>数据结构与算法</strong><br><span style="font-size:12px;color:var(--text-secondary);">周一 1-2节, 周三 3-4节 | 67/80人</span></div><span class="tag tag-green">进行中</span></div>
+        <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;"><div><strong>人工智能导论</strong><br><span style="font-size:12px;color:var(--text-secondary);">周一 7-8节, 周三 7-8节 | 100/100人</span></div><span class="tag tag-orange">已满</span></div>
+        <div style="padding:10px 0;display:flex;justify-content:space-between;"><div><strong>软件工程</strong><br><span style="font-size:12px;color:var(--text-secondary);">周五 1-2节, 5-6节 | 42/80人</span></div><span class="tag tag-green">进行中</span></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">待办事项</span></div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);">📊 数据结构与算法 — 成绩待录入 <span class="tag tag-orange" style="float:right;">待处理</span></div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);">📊 软件工程 — 成绩待录入 <span class="tag tag-orange" style="float:right;">待处理</span></div>
+        <div style="padding:8px 0;">📖 云计算与大数据 — 课程申报待审核 <span class="tag tag-purple" style="float:right;">审核中</span></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAdminDashboard() {
+  return `
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-icon blue">👥</div><div><div class="stat-value">5,230</div><div class="stat-label">总用户数</div></div></div>
+      <div class="stat-card"><div class="stat-icon green">📖</div><div><div class="stat-value">48</div><div class="stat-label">开设课程</div></div></div>
+      <div class="stat-card"><div class="stat-icon orange">⚡</div><div><div class="stat-value">856</div><div class="stat-label">当前QPS</div></div></div>
+      <div class="stat-card"><div class="stat-icon purple">✅</div><div><div class="stat-value">3</div><div class="stat-label">待审核课程</div></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="card">
+        <div class="card-header"><span class="card-title">选课热度 TOP5</span></div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);"><strong>1.</strong> 人工智能导论 <span style="float:right;">100/100 <span class="tag tag-red">已满</span></span></div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);"><strong>2.</strong> 数据结构与算法 <span style="float:right;">67/80 <span class="tag tag-orange">热门</span></span></div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);"><strong>3.</strong> 篮球 <span style="float:right;">38/40 <span class="tag tag-orange">热门</span></span></div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);"><strong>4.</strong> 中国近现代史纲要 <span style="float:right;">75/120</span></div>
+        <div style="padding:8px 0;"><strong>5.</strong> 软件工程 <span style="float:right;">42/80</span></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">系统告警</span></div>
+        <div class="alert alert-info" style="margin-bottom:8px;">✅ 所有服务运行正常</div>
+        <div style="font-size:13px;color:var(--text-secondary);">MySQL 主库连接数: 45/200</div>
+        <div style="font-size:13px;color:var(--text-secondary);margin-top:4px;">Redis 内存使用: 35%</div>
+        <div style="font-size:13px;color:var(--text-secondary);margin-top:4px;">消息队列积压: 0</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderCourseCards(courses) {
+  return courses.map(c => {
+    const isFull = c.enrolled >= c.capacity;
+    const isMine = MOCK.myEnrollments.some(e => e.courseId === c.id);
+    return `
+    <div class="course-card" onclick="showCourseDetail(${c.id})">
+      <div class="cc-header">
+        <div class="cc-title">${c.name}</div>
+        <div style="display:flex;gap:4px;">${c.tags.slice(0,2).map(t => `<span class="tag tag-blue">${t}</span>`).join('')}</div>
+      </div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;">${c.code} | ${c.credit}学分 | ${c.hours}学时</div>
+      <div class="cc-meta">
+        <span>👨‍🏫 ${c.teacher} ⭐${c.rating}</span>
+        <span>🕐 ${c.time}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">📍 ${c.location}</div>
+      <div class="cc-footer">
+        <div class="cc-capacity">
+          ${isFull ? '<span style="color:var(--danger);">已满</span>' : `剩余 <strong>${c.capacity - c.enrolled}</strong>/${c.capacity} 名额`}
+          ${c.prerequisite ? ` | 先修: <span style="color:var(--warning);">${c.prerequisite}</span>` : ''}
+        </div>
+        <span class="tag ${isFull ? 'tag-red' : 'tag-green'}">${c.type}</span>
+      </div>
+    </div>
+    `;
+  }).join('');
+}
+
+function generateScheduleCells(myCourses) {
+  let rows = '';
+  const periods = ['1-2节<br><small>08:00-09:40</small>', '3-4节<br><small>10:00-11:40</small>',
+    '5-6节<br><small>14:00-15:40</small>', '7-8节<br><small>16:00-17:40</small>', '9-10节<br><small>19:00-20:40</small>'];
+  const dayMap = { '周一':1, '周二':2, '周三':3, '周四':4, '周五':5 };
+  const colors = ['', 'green', 'orange', 'purple'];
+
+  // Build lookup
+  const scheduleMap = {};
+  myCourses.forEach((c, idx) => {
+    const parts = c.time.split(', ');
+    parts.forEach(p => {
+      const [day, period] = p.split(' ');
+      const dayIdx = dayMap[day];
+      const pStart = period.split('-')[0];
+      const rowIdx = Math.ceil(parseInt(pStart) / 2) - 1;
+      const key = `${rowIdx}-${dayIdx}`;
+      if (!scheduleMap[key]) scheduleMap[key] = [];
+      scheduleMap[key].push({ course: c, color: colors[idx % colors.length] });
+    });
+  });
+
+  for (let r = 0; r < 5; r++) {
+    rows += `<div class="sg-time">${periods[r]}</div>`;
+    for (let d = 1; d <= 7; d++) {
+      const key = `${r}-${d}`;
+      const slots = scheduleMap[key] || [];
+      rows += `<div class="sg-cell">${slots.map(s => `<div class="sg-course ${s.color}" onclick="showCourseDetail(${s.course.id})">${s.course.name.substring(0,8)}</div>`).join('')}</div>`;
+    }
+    rows += '';
+  }
+  return rows;
+}
+
+// ==================== INTERACTIONS ====================
+function filterCourses() {
+  const type = document.getElementById('filter-type')?.value || '';
+  const category = document.getElementById('filter-category')?.value || '';
+  const capacity = document.getElementById('filter-capacity')?.value || '';
+  const search = document.getElementById('filter-search')?.value?.toLowerCase() || '';
+
+  let filtered = MOCK.courses;
+  if (type) filtered = filtered.filter(c => c.type === type);
+  if (category) filtered = filtered.filter(c => c.category === category);
+  if (capacity === 'has') filtered = filtered.filter(c => c.enrolled < c.capacity);
+  if (capacity === 'full') filtered = filtered.filter(c => c.enrolled >= c.capacity);
+  if (search) filtered = filtered.filter(c => c.name.toLowerCase().includes(search) || c.teacher.toLowerCase().includes(search) || c.code.toLowerCase().includes(search));
+
+  document.getElementById('course-grid').innerHTML = renderCourseCards(filtered);
+}
+
+function showCourseDetail(courseId) {
+  const c = MOCK.courses.find(c => c.id === courseId);
+  if (!c) return;
+  STATE.currentCourse = c;
+
+  document.getElementById('modal-course-title').textContent = c.name;
+  document.getElementById('modal-course-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div><strong>课程编码：</strong>${c.code}</div>
+      <div><strong>学分/学时：</strong>${c.credit}学分 / ${c.hours}学时</div>
+      <div><strong>课程类型：</strong><span class="tag tag-blue">${c.type}</span></div>
+      <div><strong>科目分类：</strong>${c.category}</div>
+      <div><strong>授课教师：</strong>${c.teacher} ⭐${c.rating}</div>
+      <div><strong>开课院系：</strong>${c.department}</div>
+      <div><strong>上课时间：</strong>${c.time}</div>
+      <div><strong>上课地点：</strong>${c.location}</div>
+      <div><strong>课程容量：</strong>${c.enrolled >= c.capacity ? '<span style="color:var(--danger);">已满</span>' : `${c.enrolled}/${c.capacity}`}</div>
+      <div><strong>先修课程：</strong>${c.prerequisite || '无'}</div>
+    </div>
+    <div style="padding:12px;background:#FAFAFA;border-radius:var(--radius);margin-bottom:12px;">
+      <strong>课程简介</strong>
+      <p style="margin-top:6px;color:var(--text-secondary);line-height:1.6;">${c.desc}</p>
+    </div>
+    <div><strong>课程标签：</strong>${c.tags.map(t => `<span class="tag tag-blue" style="margin:0 2px;">${t}</span>`).join('') || '无'}</div>
+  `;
+
+  const btnEnroll = document.getElementById('btn-enroll');
+  const alreadyEnrolled = MOCK.myEnrollments.some(e => e.courseId === c.id);
+  if (c.enrolled >= c.capacity) {
+    btnEnroll.textContent = '已满';
+    btnEnroll.disabled = true;
+  } else if (alreadyEnrolled) {
+    btnEnroll.textContent = '已选课';
+    btnEnroll.disabled = true;
+  } else {
+    btnEnroll.textContent = '立即选课';
+    btnEnroll.disabled = false;
+  }
+
+  document.getElementById('modal-course-detail').classList.add('show');
+}
+
+function doEnroll() {
+  if (!STATE.currentCourse) return;
+  const c = STATE.currentCourse;
+
+  if (c.enrolled >= c.capacity) {
+    alert('该课程已满，请选择其他课程。');
+    return;
+  }
+
+  c.enrolled += 1;
+  MOCK.myEnrollments.push({
+    courseId: c.id,
+    round: 2,
+    status: '已选中',
+    time: new Date().toLocaleString('zh-CN'),
+  });
+
+  document.getElementById('modal-course-detail').classList.remove('show');
+  alert(`选课成功！\n课程：${c.name}\n时间：${c.time}\n地点：${c.location}\n\n剩余名额：${c.capacity - c.enrolled}/${c.capacity}`);
+
+  if (STATE.currentPage === 'course-market') {
+    navigateTo('course-market');
+  }
+}
+
+function confirmDrop(courseId) {
+  const c = MOCK.courses.find(c => c.id === courseId);
+  if (!c) return;
+  document.getElementById('modal-confirm-body').innerHTML = `<p>确认退选课程 <strong>${c.name}</strong> 吗？</p><p style="color:var(--text-secondary);font-size:13px;margin-top:8px;">退课后名额将释放给其他同学，操作不可撤销。</p>`;
+  document.getElementById('btn-confirm-ok').onclick = function() {
+    const idx = MOCK.myEnrollments.findIndex(e => e.courseId === courseId);
+    if (idx >= 0) MOCK.myEnrollments.splice(idx, 1);
+    c.enrolled = Math.max(0, c.enrolled - 1);
+    closeModal('modal-confirm');
+    navigateTo('my-enrollments');
+  };
+  document.getElementById('modal-confirm').classList.add('show');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+function switchExamTab(tab, el) {
+  document.querySelectorAll('#exam-center .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['upcoming', 'history', 'self-test'].forEach(t => {
+    const div = document.getElementById('exam-tab-' + t);
+    if (div) div.classList.toggle('hidden', t !== tab);
+  });
+}
+
+function initExamPage() {
+  // exam center already rendered by renderer
+}
+
+function startExam(examId) {
+  const e = MOCK.exams.find(x => x.id === examId);
+  if (!e) return;
+
+  const content = document.getElementById('page-content');
+  const qs = MOCK.questions.slice(0, 5);
+  content.innerHTML = `
+    <div style="display:flex;min-height:calc(100vh - 140px);">
+      <div class="exam-sidebar" style="position:static;width:200px;">
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">答题卡</div>
+        ${qs.map((q,i) => `<div class="qs-item current" id="qs-${i}" onclick="jumpQuestion(${i})">${i+1}. ${q.type}</div>`).join('')}
+        <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px;">
+          <button class="btn btn-danger btn-sm" style="width:100%;" onclick="confirmSubmitExam()">交卷</button>
+        </div>
+      </div>
+      <div class="exam-content" style="flex:1;">
+        <div class="flex-between" style="margin-bottom:16px;">
+          <h2>${e.name}</h2>
+          <div class="exam-timer">⏱ <span id="exam-countdown">${e.duration}:00</span></div>
+        </div>
+        ${qs.map((q,i) => `
+          <div class="card exam-question" id="eq-${i}" style="${i>0?'display:none;':''}">
+            <div class="card-header"><span class="card-title">第 ${i+1} 题 — ${q.type}</span><span style="font-size:13px;color:var(--text-secondary);">${q.kp}</span></div>
+            <p style="line-height:1.8;margin-bottom:16px;">${q.content}</p>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              ${q.options.map(o => `<label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'"><input type="${q.type==='多选题'?'checkbox':'radio'}" name="q${i}" value="${o[0]}"> ${o}</label>`).join('')}
+            </div>
+            <div style="margin-top:12px;display:flex;justify-content:space-between;">
+              <button class="btn btn-outline btn-sm" ${i===0?'disabled':''} onclick="jumpQuestion(${i-1})">← 上一题</button>
+              <button class="btn btn-primary btn-sm" ${i===qs.length-1?'disabled':''} onclick="jumpQuestion(${i+1})">下一题 →</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  STATE.currentExamQs = qs;
+
+  // Start timer
+  let seconds = e.duration * 60;
+  STATE.examTimer = setInterval(() => {
+    seconds--;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    document.getElementById('exam-countdown').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    if (seconds <= 0) {
+      clearInterval(STATE.examTimer);
+      alert('考试时间到，系统已自动交卷！');
+      navigateTo('exam-center');
+    }
+  }, 1000);
+}
+
+function jumpQuestion(idx) {
+  document.querySelectorAll('.exam-question').forEach((el, i) => el.style.display = i === idx ? '' : 'none');
+  document.querySelectorAll('.qs-item').forEach((el, i) => {
+    el.classList.toggle('current', i === idx);
+  });
+}
+
+function confirmSubmitExam() {
+  document.getElementById('modal-confirm-body').innerHTML = '<p>确认提交试卷吗？</p><p style="color:var(--text-secondary);font-size:13px;margin-top:8px;">交卷后将无法继续作答。</p>';
+  document.getElementById('btn-confirm-ok').onclick = function() {
+    clearInterval(STATE.examTimer);
+    closeModal('modal-confirm');
+    alert('交卷成功！\n客观题已自动批改，请等待成绩发布。');
+    navigateTo('exam-center');
+  };
+  document.getElementById('modal-confirm').classList.add('show');
+}
+
+// ==================== GLOBAL CLICK TO CLOSE MODALS ====================
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal-overlay')) {
+    e.target.classList.remove('show');
+  }
+});
+
+// ==================== KEYBOARD SHORTCUTS ====================
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
+  }
+});
+</script>
+</body>
+</html>

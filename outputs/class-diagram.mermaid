@@ -1,0 +1,204 @@
+classDiagram
+    direction TB
+
+    %% ===== 系统模块 (sys_) =====
+    class SysUser {
+        +Long id
+        +String username
+        +String password
+        +String realName
+        +Integer userType
+        +String department
+        +String major
+        +String phone
+        +String email
+        +Integer status
+        +Integer loginFailCount
+        +LocalDateTime lockUntil
+        +LocalDateTime lastLoginTime
+        +LocalDateTime createTime
+        +Integer deleted
+    }
+
+    class SysRole {
+        +Long id
+        +String roleCode
+        +String roleName
+        +String description
+        +Integer status
+    }
+
+    class SysMenu {
+        +Long id
+        +Long parentId
+        +String menuName
+        +String path
+        +String component
+        +String icon
+        +String menuType
+        +String permission
+        +Integer sortOrder
+        +Boolean visible
+        +Integer status
+    }
+
+    class SysUserRole {
+        +Long id
+        +Long userId
+        +Long roleId
+    }
+
+    class SysRoleMenu {
+        +Long id
+        +Long roleId
+        +Long menuId
+    }
+
+    %% ===== 课程模块 (crs_) =====
+    class CrsCourse {
+        +Long id
+        +String courseCode
+        +String courseName
+        +Double credit
+        +String description
+        +String category
+        +String syllabus
+        +Integer status
+        +Integer deleted
+    }
+
+    class CrsOffering {
+        +Long id
+        +Long courseId
+        +Long teacherId
+        +String semester
+        +Integer weekday
+        +Integer periodStart
+        +Integer periodEnd
+        +String location
+        +Integer capacity
+        +Integer enrolledCount
+        +Integer status
+        +String auditComment
+        +LocalDateTime createTime
+        +Integer deleted
+    }
+
+    %% ===== 选课模块 (reg_) =====
+    class RegRound {
+        +Long id
+        +String roundName
+        +LocalDateTime startTime
+        +LocalDateTime endTime
+        +Integer maxCredits
+        +Integer maxCourses
+        +String targetGrades
+        +Integer status
+        +Integer deleted
+    }
+
+    class RegEnrollment {
+        +Long id
+        +Long studentId
+        +Long offeringId
+        +Long roundId
+        +Integer status
+        +LocalDateTime createdAt
+        +LocalDateTime droppedAt
+        +Integer deleted
+    }
+
+    class RegScore {
+        +Long id
+        +Long studentId
+        +Long offeringId
+        +Integer scoreType
+        +Double scoreValue
+        +String gradeLevel
+        +Double gpa
+        +Integer status
+        +Long enteredBy
+        +LocalDateTime createTime
+        +Integer deleted
+    }
+
+    %% ===== 考试模块 (exam_) =====
+    class ExamExam {
+        +Long id
+        +Long offeringId
+        +String examName
+        +LocalDateTime startTime
+        +LocalDateTime endTime
+        +Integer durationMinutes
+        +Integer totalScore
+        +Integer status
+        +Integer deleted
+    }
+
+    class ExamPaper {
+        +Long id
+        +Long examId
+        +String paperTitle
+        +Integer questionCount
+        +Integer totalScore
+        +Integer deleted
+    }
+
+    class ExamPaperQuestion {
+        +Long id
+        +Long paperId
+        +Long questionId
+        +Integer questionOrder
+        +Integer score
+    }
+
+    class ExamQuestion {
+        +Long id
+        +Long questionType
+        +String content
+        +String options
+        +String answer
+        +String analysis
+        +Integer difficulty
+        +String knowledgePoint
+        +Long createdBy
+        +Integer scope
+        +Integer deleted
+    }
+
+    class ExamRecord {
+        +Long id
+        +Long examId
+        +Long studentId
+        +LocalDateTime startTime
+        +LocalDateTime submitTime
+        +String answers
+        +Double objectiveScore
+        +Double totalScore
+        +Integer status
+        +Integer deleted
+    }
+
+    %% ===== Relationships =====
+    SysUser "1" -- "N" SysUserRole : user_id
+    SysRole "1" -- "N" SysUserRole : role_id
+    SysRole "1" -- "N" SysRoleMenu : role_id
+    SysMenu "1" -- "N" SysRoleMenu : menu_id
+
+    SysUser "1(教师)" -- "N" CrsOffering : teacher_id
+    CrsCourse "1" -- "N" CrsOffering : course_id
+
+    SysUser "1(学生)" -- "N" RegEnrollment : student_id
+    CrsOffering "1" -- "N" RegEnrollment : offering_id
+    RegRound "1" -- "N" RegEnrollment : round_id
+
+    SysUser "1(学生)" -- "N" RegScore : student_id
+    CrsOffering "1" -- "1" RegScore : offering_id
+
+    CrsOffering "1" -- "N" ExamExam : offering_id
+    ExamExam "1" -- "1" ExamPaper : exam_id
+    ExamPaper "1" -- "N" ExamPaperQuestion : paper_id
+    ExamQuestion "1" -- "N" ExamPaperQuestion : question_id
+
+    ExamExam "1" -- "N" ExamRecord : exam_id
+    SysUser "1(学生)" -- "N" ExamRecord : student_id

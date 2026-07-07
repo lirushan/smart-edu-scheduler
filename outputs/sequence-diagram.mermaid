@@ -1,0 +1,97 @@
+sequenceDiagram
+    participant F as Vue前端
+    participant JWT as JwtAuthFilter
+    participant AC as AuthController
+    participant AS as AuthService
+    participant EC as EnrollmentController
+    participant ES as EnrollmentService
+    participant CS as CourseService
+    participant SC as ScheduleController
+    participant XC as ExamController
+    participant XS as ExamService
+    participant R as Redis/Redisson
+    participant DB as MySQL
+    participant MQ as RabbitMQ
+
+    Note over F,MQ: ===== 登录流程 =====
+    F->>AC: POST /auth/login
+    AC->>AS: login(username, password)
+    AS->>DB: SELECT sys_user WHERE username=?
+    DB-->>AS: user
+    AS->>AS: BCrypt.matches(password)
+    alt 密码错误
+        AS->>DB: UPDATE login_fail_count+1
+        alt fail_count>=5
+            AS->>DB: UPDATE lock_until=NOW+30min
+            AS-->>F: 10302 ACCOUNT_LOCKED
+        end
+        AS-->>F: 10301 PASSWORD_ERROR
+    end
+    AS->>DB: reset fail_count, update last_login_time
+    AS->>AS: JwtTokenProvider.createToken(userId,roles)
+    AS->>R: cache refreshToken
+    AS-->>F: {accessToken, refreshToken, userInfo}
+
+    Note over F,MQ: ===== 选课抢课流程 =====
+    F->>JWT: Authorization: Bearer {token}
+    JWT->>JWT: validate → userId=1001, roles=[STUDENT]
+    F->>EC: POST /enrollments {offeringId: 5}
+    EC->>ES: enroll(1001, 5)
+
+    ES->>DB: 查询当前轮次是否开放
+    alt 轮次未开放
+        ES-->>F: 10002 ENROLL_TIME_NOT_OPEN
+    end
+
+    ES->>DB: 查询是否已选 (1001,5)
+    alt 已选
+        ES-->>F: 10006 DUPLICATE_ENROLL
+    end
+
+    ES->>DB: 查询已选门数 + 学分
+    alt 超限
+        ES-->>F: 10004 CREDIT_EXCEEDED
+    end
+
+    ES->>R: RLock("enroll:offering:5").lock()
+    ES->>R: DECR "enroll:quota:5"
+    R-->>ES: remaining=3 (≥0 ✓)
+
+    ES->>DB: INSERT reg_enrollment (status=0)
+    ES->>R: RLock.unlock()
+    ES->>MQ: publish EnrollmentCreated
+
+    ES-->>F: {code:200, data: enrollment}
+
+    Note over MQ,DB: 异步同步
+    MQ->>DB: UPDATE offering SET enrolled_count+1
+
+    Note over F,MQ: ===== 课程广场 =====
+    F->>CS: GET /courses/offerings?keyword=Java&page=1&size=20
+    CS->>DB: SELECT ... FROM crs_offering WHERE status=1
+    DB-->>CS: Page<Offering>
+    CS-->>F: PageResult {total, records}
+
+    Note over F,MQ: ===== 课表查询 =====
+    F->>SC: GET /schedules/my
+    SC->>DB: 判断角色 → 查询 reg_enrollment JOIN crs_offering
+    DB-->>SC: List<ScheduleItem>
+    SC-->>F: ScheduleVO {weekMap: {1:[...],2:[...]}}
+
+    Note over F,MQ: ===== 考试提交 =====
+    F->>XC: POST /exams/1/submit {answers}
+    XC->>XS: submit(1001, 1, answers)
+    XS->>DB: SELECT exam_record (1,1001)
+    alt 已交卷
+        XS-->>F: 10102 ALREADY_SUBMITTED
+    end
+    XS->>DB: SELECT exam (status, end_time)
+    alt 超时
+        XS-->>F: 10101 EXAM_ENDED
+    end
+    XS->>DB: SELECT questions WITH answers
+    loop 客观题评分
+        XS->>XS: 比对答案 → 累加分数
+    end
+    XS->>DB: UPDATE exam_record (submit, score, status=1)
+    XS-->>F: ExamResultVO {objectiveScore, totalScore}

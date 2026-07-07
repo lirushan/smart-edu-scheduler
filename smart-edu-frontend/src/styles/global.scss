@@ -1,0 +1,231 @@
+// ============================================================
+// 智教通 Global Styles — Figma 紫色毛玻璃风格
+// 基于 auto-project style.css 的完整 Figma 设计系统
+// ============================================================
+
+@use './_glassmorphism.scss' as *;
+@use './_animations.scss' as *;
+
+// 字体
+html {
+  font-family: $font-family;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  cursor: url("/cursor.svg") 2 2, auto;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  overflow: hidden;
+  background-attachment: fixed;
+}
+
+button, a, [role="button"], input, select, textarea {
+  cursor: url("/cursor.svg") 2 2, auto;
+}
+a:hover, button:hover, [role="button"]:hover {
+  cursor: url("/cursor-hover.svg") 2 2, pointer;
+}
+
+// Light mode glassmorphism body
+html.light body {
+  background: linear-gradient(
+    135deg,
+    #f0ecff 0%, #e8e0ff 20%, #f5f0ff 40%,
+    #ede4ff 60%, #f0ecff 80%, #e8dff8 100%
+  );
+  background-attachment: fixed;
+}
+
+// Scrollbar
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border-hover); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+// Selection
+::selection { background: rgba(139, 92, 246, 0.3); color: #fff; }
+
+// ===== Element Plus Overrides =====
+
+// Table
+.el-table {
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: transparent;
+  --el-table-border-color: var(--color-border);
+  --el-table-current-row-bg-color: rgba(139, 92, 246, 0.08);
+}
+html.dark .el-table,
+html.dark .el-table__inner-wrapper,
+html.dark .el-table__body-wrapper,
+html.dark .el-table__header-wrapper {
+  background: transparent !important;
+}
+html.light .el-table__inner-wrapper,
+html.light .el-table__body-wrapper {
+  background: transparent !important;
+}
+html.dark .el-table th.el-table__cell {
+  background: rgba(255, 255, 255, 0.03) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+html.light .el-table th.el-table__cell {
+  background: rgba(0, 0, 0, 0.02) !important;
+  color: rgba(0, 0, 0, 0.55) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.el-table th.el-table__cell { font-size: 12px; font-weight: 500; text-transform: none; }
+.el-table tr { background: transparent !important; }
+.el-table td.el-table__cell { border-bottom: 1px solid var(--color-border); color: var(--color-text); }
+html.dark .el-table .el-table__row:hover > td { background: rgba(255, 255, 255, 0.03) !important; }
+html.light .el-table .el-table__row:hover > td { background: rgba(0, 0, 0, 0.02) !important; }
+html.dark .el-table .el-table__row--striped td.el-table__cell { background: rgba(255, 255, 255, 0.025) !important; }
+html.light .el-table .el-table__row--striped td.el-table__cell { background: rgba(139, 92, 246, 0.03) !important; }
+
+// Table rounded corners
+.page-card .el-table { border-radius: 10px; overflow: hidden; }
+.page-card .el-table::before { display: none; }
+
+// Dialog
+.el-dialog {
+  --el-dialog-bg-color: var(--color-surface);
+  --el-dialog-border-radius: 1rem;
+}
+.el-dialog__header { border-bottom: 1px solid var(--color-border); }
+.el-dialog__title { color: var(--color-text) !important; opacity: 0.9; }
+.el-dialog__body { color: var(--color-text-secondary); }
+
+// Form
+.el-form-item__label { color: var(--color-text-secondary) !important; }
+
+// Inputs — 圆角毛玻璃
+.el-input__wrapper {
+  background: var(--color-surface-hover) !important;
+  border-color: var(--color-border) !important;
+  box-shadow: none !important;
+  border-radius: 0.75rem !important;
+}
+.el-input__inner { color: var(--color-text) !important; }
+html.dark .el-input__inner::placeholder { color: rgba(255, 255, 255, 0.25) !important; }
+html.light .el-input__inner::placeholder { color: rgba(0, 0, 0, 0.3) !important; }
+
+// Buttons
+.el-button--primary {
+  --el-button-bg-color: var(--color-brand);
+  --el-button-border-color: var(--color-brand);
+  border-radius: 0.75rem !important;
+}
+
+// Tags
+.el-tag { border-radius: 0.5rem !important; }
+html.light .el-tag { border: 1px solid rgba(0, 0, 0, 0.08); }
+html.dark .el-tag { border: 1px solid rgba(255, 255, 255, 0.06); }
+
+// Dark mode button fixes
+html.dark .el-button:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info):not(.is-text) {
+  --el-button-bg-color: rgba(255, 255, 255, 0.06);
+  --el-button-border-color: rgba(255, 255, 255, 0.12);
+  --el-button-text-color: var(--color-text-secondary) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: var(--color-text-secondary) !important;
+}
+html.dark .el-button:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info):not(.is-text):hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: var(--color-text) !important;
+}
+html.dark .el-button.is-plain {
+  background: rgba(139, 92, 246, 0.1) !important;
+  border-color: rgba(139, 92, 246, 0.3) !important;
+  color: var(--color-brand-light) !important;
+}
+html.dark .el-button.is-text {
+  color: var(--color-text-secondary) !important;
+  background: transparent !important;
+}
+html.dark .el-button.is-text:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--color-brand-light) !important;
+}
+
+// Dark mode tag fixes
+html.dark .el-tag { background-color: rgba(139, 92, 246, 0.12) !important; border-color: rgba(139, 92, 246, 0.2) !important; color: var(--color-brand-light) !important; }
+html.dark .el-tag--success { background: rgba(16, 185, 129, 0.15) !important; border-color: rgba(16, 185, 129, 0.25) !important; color: #34d399 !important; }
+html.dark .el-tag--warning { background: rgba(245, 158, 11, 0.15) !important; border-color: rgba(245, 158, 11, 0.25) !important; color: #fbbf24 !important; }
+html.dark .el-tag--danger  { background: rgba(239, 68, 68, 0.15) !important; border-color: rgba(239, 68, 68, 0.25) !important; color: #f87171 !important; }
+html.dark .el-tag--info    { background: rgba(148, 163, 184, 0.15) !important; border-color: rgba(148, 163, 184, 0.2) !important; color: #94a3b8 !important; }
+
+// Switch
+html.dark .el-switch.is-checked .el-switch__core { background: var(--color-brand) !important; border-color: var(--color-brand) !important; }
+html.dark .el-switch .el-switch__core { background: rgba(255, 255, 255, 0.15) !important; border-color: rgba(255, 255, 255, 0.15) !important; }
+html.dark .el-switch .el-switch__action { background: #fff !important; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3) !important; }
+
+// Pagination
+.el-pagination {
+  --el-pagination-button-bg-color: transparent;
+  --el-pagination-text-color: var(--color-text-secondary);
+}
+.el-pager li { background: transparent !important; color: var(--color-text-secondary) !important; }
+.el-pager li.is-active { background: rgba(139, 92, 246, 0.15) !important; color: var(--color-brand-light) !important; }
+html.dark .el-pagination button,
+html.dark .el-pager li { background: rgba(255, 255, 255, 0.04) !important; color: var(--color-text-secondary) !important; border-color: var(--color-border) !important; }
+html.dark .el-pager li.is-active { background: rgba(139, 92, 246, 0.2) !important; color: var(--color-brand-light) !important; }
+
+// Popper / Dropdown dark mode
+html.dark .el-popper,
+html.dark .el-select__popper,
+html.dark .el-select-dropdown,
+html.dark .el-dropdown-menu,
+html.dark .el-dropdown__popper,
+html.dark .el-popover,
+html.dark .el-cascader__dropdown,
+html.dark .el-date-picker,
+html.dark .el-time-panel,
+html.dark .el-autocomplete-suggestion {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+html.dark .el-select-dropdown__item,
+html.dark .el-dropdown-menu__item,
+html.dark .el-cascader-node__label,
+html.dark .el-autocomplete-suggestion__item {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+html.dark .el-select-dropdown__item.selected,
+html.dark .el-select-dropdown__item.is-hovering,
+html.dark .el-dropdown-menu__item:hover,
+html.dark .el-cascader-node.is-active,
+html.dark .el-cascader-node:hover,
+html.dark .el-autocomplete-suggestion__item:hover {
+  background: rgba(139, 92, 246, 0.12) !important;
+  color: #fff !important;
+}
+html.dark .el-popper__arrow::before { background: #1a1a2e !important; border-color: rgba(255, 255, 255, 0.08) !important; }
+html.dark .el-select-dropdown__wrap,
+html.dark .el-select-dropdown__list,
+html.dark .el-scrollbar__wrap,
+html.dark .el-scrollbar__view { background: transparent !important; }
+
+// Card
+html.dark .el-card {
+  --el-card-bg-color: var(--color-surface);
+  background: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text) !important;
+}
+html.dark .el-card__header { color: var(--color-text) !important; border-bottom-color: var(--color-border) !important; }
+
+// Message box
+html.dark .el-message-box {
+  --el-messagebox-bg-color: #1a1a2e;
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+html.dark .el-message-box__title { color: #fff !important; }
+html.dark .el-message-box__message { color: rgba(255, 255, 255, 0.6) !important; }
