@@ -1,52 +1,11 @@
 // ============================================================
-// Animations — 光球漂浮 / 呼吸灯 / 菜单动效 / 光圈脉冲
+// Animations — 呼吸灯 / 菜单动效 / 图标质感
 // ============================================================
-
-// Floating orb keyframes
-@keyframes float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  25% { transform: translate(-30px, 20px) scale(1.05); }
-  50% { transform: translate(-15px, 35px) scale(0.97); }
-  75% { transform: translate(20px, 15px) scale(1.03); }
-}
-
-@keyframes lightFloat1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  25% { transform: translate(-30px, 20px) scale(1.05); }
-  50% { transform: translate(-15px, 35px) scale(0.97); }
-  75% { transform: translate(20px, 15px) scale(1.03); }
-}
-@keyframes lightFloat2 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  25% { transform: translate(25px, -20px) scale(1.04); }
-  50% { transform: translate(15px, -35px) scale(0.96); }
-  75% { transform: translate(-20px, -15px) scale(1.02); }
-}
-@keyframes lightFloat3 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(-25px, -18px) scale(1.06); }
-  66% { transform: translate(18px, 22px) scale(0.95); }
-}
-@keyframes lightFloat4 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(20px, 25px) scale(1.05); }
-  66% { transform: translate(-15px, -20px) scale(0.97); }
-}
-@keyframes lightFloat5 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(-18px, -22px) scale(1.07); }
-  66% { transform: translate(22px, 18px) scale(0.94); }
-}
 
 // Pulse ring
 @keyframes ringPulse {
   0%, 100% { opacity: 0.4; transform: scale(1); }
   50% { opacity: 0.9; transform: scale(1.02); }
-}
-
-@keyframes pulseExpand {
-  0% { transform: scale(0.5); opacity: 0.6; }
-  100% { transform: scale(2.5); opacity: 0; }
 }
 
 // Glow pulse for sidebar active item
@@ -59,77 +18,6 @@
 @keyframes breathe {
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
-}
-
-// Floating orb decorations
-.bg-orb {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  filter: blur(80px);
-  z-index: 0;
-}
-
-.bg-orb-1 {
-  width: 600px; height: 600px;
-  background: rgba(139, 92, 246, 0.15);
-  top: -200px; right: -100px;
-  animation: float 10s ease-in-out infinite;
-}
-.bg-orb-2 {
-  width: 400px; height: 400px;
-  background: rgba(59, 130, 246, 0.12);
-  bottom: -150px; left: -80px;
-  animation: float 12s ease-in-out infinite reverse;
-}
-.bg-orb-3 {
-  width: 300px; height: 300px;
-  background: rgba(236, 72, 153, 0.1);
-  top: 40%; left: 40%;
-  animation: float 8s ease-in-out infinite;
-}
-
-// Light orbs — 柔和光球
-.light-orb {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
-}
-.light-orb-1 {
-  width: 500px; height: 500px;
-  top: -10%; right: -5%;
-  background: radial-gradient(circle, rgba(167, 139, 250, 0.25) 0%, rgba(139, 92, 246, 0.12) 40%, transparent 70%);
-  filter: blur(60px);
-  animation: lightFloat1 14s ease-in-out infinite;
-}
-.light-orb-2 {
-  width: 400px; height: 400px;
-  bottom: -8%; left: -6%;
-  background: radial-gradient(circle, rgba(96, 165, 250, 0.22) 0%, rgba(59, 130, 246, 0.1) 40%, transparent 70%);
-  filter: blur(55px);
-  animation: lightFloat2 17s ease-in-out infinite;
-}
-.light-orb-3 {
-  width: 320px; height: 320px;
-  top: 45%; left: 50%;
-  background: radial-gradient(circle, rgba(244, 114, 182, 0.18) 0%, rgba(236, 72, 153, 0.08) 45%, transparent 70%);
-  filter: blur(50px);
-  animation: lightFloat3 20s ease-in-out infinite;
-}
-.light-orb-4 {
-  width: 260px; height: 260px;
-  top: 15%; left: 25%;
-  background: radial-gradient(circle, rgba(52, 211, 153, 0.15) 0%, rgba(16, 185, 129, 0.06) 45%, transparent 70%);
-  filter: blur(45px);
-  animation: lightFloat4 18s ease-in-out infinite;
-}
-.light-orb-5 {
-  width: 200px; height: 200px;
-  bottom: 30%; right: 15%;
-  background: radial-gradient(circle, rgba(251, 146, 60, 0.14) 0%, rgba(245, 158, 11, 0.06) 45%, transparent 70%);
-  filter: blur(40px);
-  animation: lightFloat5 22s ease-in-out infinite;
 }
 
 // Glow ring utility
@@ -149,23 +37,6 @@
     animation: ringPulse 3s ease-in-out infinite;
   }
 }
-
-// Pulse rings container
-.pulse-rings {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-.pulse-ring {
-  position: absolute;
-  border-radius: 50%;
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  animation: pulseExpand 3s ease-out infinite;
-}
-.pulse-ring:nth-child(1) { width: 200px; height: 200px; top: 30%; left: 20%; animation-delay: 0s; }
-.pulse-ring:nth-child(2) { width: 300px; height: 300px; bottom: 20%; right: 15%; animation-delay: 1s; }
-.pulse-ring:nth-child(3) { width: 150px; height: 150px; top: 60%; left: 60%; animation-delay: 2s; }
 
 // Grid background
 .bg-grid {

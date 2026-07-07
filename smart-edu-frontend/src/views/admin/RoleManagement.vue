@@ -250,12 +250,13 @@ function openCreateDialog() {
   dialogVisible.value = true
 }
 
-function openEditDialog(row: RoleItem) {
+function openEditDialog(row: RoleItem | Record<string, any>) {
+  const role = row as RoleItem
   dialogMode.value = 'edit'
-  editingId.value = row.id
-  form.roleName = row.roleName
-  form.roleCode = row.roleCode
-  form.description = row.description || ''
+  editingId.value = role.id
+  form.roleName = role.roleName
+  form.roleCode = role.roleCode
+  form.description = role.description || ''
   dialogVisible.value = true
 }
 

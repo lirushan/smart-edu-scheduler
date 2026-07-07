@@ -286,11 +286,11 @@ def print_summary() -> None:
 
     print()
     if rate == 100.0:
-        print("🎉 全部通过!")
+        print("[OK] 全部通过!")
     elif rate >= 80.0:
-        print("⚠️  大部分通过，请检查失败用例。")
+        print("[WARN] 大部分通过，请检查失败用例。")
     else:
-        print("❌ 通过率较低，建议确认服务是否正常启动。")
+        print("[FAIL] 通过率较低，建议确认服务是否正常启动。")
 
 
 def main() -> None:

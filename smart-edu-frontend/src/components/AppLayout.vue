@@ -1,12 +1,5 @@
 <template>
   <div class="app-layout" :class="{ 'dark-mode': isDark }">
-    <!-- 光球背景层 -->
-    <div class="bg-orbs">
-      <div class="bg-orb bg-orb-1"></div>
-      <div class="bg-orb bg-orb-2"></div>
-      <div class="bg-orb bg-orb-3"></div>
-    </div>
-
     <!-- 玻璃态侧边栏 -->
     <aside class="sidebar-glass" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="logo-area">
@@ -234,22 +227,6 @@ onUnmounted(() => clearInterval(timer))
   overflow-x: hidden;
 }
 
-// 光球背景
-.bg-orbs {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-.bg-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-}
-.bg-orb-1 { width: 500px; height: 500px; background: rgba(139, 92, 246, 0.12); top: -150px; right: -100px; }
-.bg-orb-2 { width: 350px; height: 350px; background: rgba(59, 130, 246, 0.1); bottom: -100px; left: -80px; }
-.bg-orb-3 { width: 250px; height: 250px; background: rgba(236, 72, 153, 0.08); top: 50%; left: 45%; }
-
 // 玻璃态侧边栏
 .sidebar-glass {
   width: 252px;
@@ -453,7 +430,6 @@ onUnmounted(() => clearInterval(timer))
   }
 }
 </style>
-
 
 
 

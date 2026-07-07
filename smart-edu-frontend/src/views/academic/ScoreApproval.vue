@@ -72,7 +72,7 @@ async function fetchScores() {
   loading.value = true
   try {
     const params: any = { page: currentPage.value, size: pageSize.value }
-    if (filterStatus.value !== null && filterStatus.value !== undefined && filterStatus.value !== '') {
+    if (filterStatus.value !== null && filterStatus.value !== undefined) {
       params.status = filterStatus.value
     }
     const res: any = await academicScoreApi.reviewList(params)

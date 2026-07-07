@@ -1,10 +1,5 @@
 <template>
   <div class="login-page">
-    <!-- 光球背景 -->
-    <div class="light-orb light-orb-1"></div>
-    <div class="light-orb light-orb-2"></div>
-    <div class="light-orb light-orb-3"></div>
-
     <div class="login-card page-card gradient-border-top">
       <div class="login-logo">
         <div class="logo-icon icon-3d-clay icon-3d-purple icon-3d-lg">
@@ -26,7 +21,7 @@
           <el-input v-model="form.password" type="password" placeholder="请输入密码" :prefix-icon="Lock" show-password />
         </el-form-item>
         <el-form-item>
-          <el-radio-group v-model="form.role" class="role-group">
+          <el-radio-group v-model="form.role" class="role-group" @change="applyRoleAccount">
             <el-radio-button value="student">学生</el-radio-button>
             <el-radio-button value="teacher">教师</el-radio-button>
             <el-radio-button value="academic">教务</el-radio-button>
@@ -45,13 +40,6 @@
         <p class="demo-hint">种子账号: admin / teacher01 / student01 / academic01 / qbadmin01</p>
         <p class="demo-hint">密码: password123</p>
       </div>
-    </div>
-
-    <!-- 脉冲光圈装饰 -->
-    <div class="pulse-rings">
-      <div class="pulse-ring"></div>
-      <div class="pulse-ring"></div>
-      <div class="pulse-ring"></div>
     </div>
   </div>
 </template>
@@ -96,8 +84,11 @@ async function handleLogin() {
   try {
     try {
       // 尝试调用真实 API
-      await userStore.login(roleUserMap[form.role] || form.username, form.password)
+      await userStore.login(form.username, form.password)
     } catch {
+      if (import.meta.env.VITE_ENABLE_MOCK_LOGIN !== 'true') {
+        throw new Error('登录失败，请检查账号、密码或后端服务状态')
+      }
       // 降级到模拟登录
       const userMap: Record<string, { id: number; realName: string; userType: number; department: string; major: string }> = {
         student: { id: 6, realName: '张明远', userType: 1, department: '计算机学院', major: '计算机科学与技术' },
@@ -125,6 +116,13 @@ async function handleLogin() {
     loading.value = false
   }
 }
+
+function applyRoleAccount(role: string | number | boolean | undefined) {
+  const nextUsername = roleUserMap[String(role)]
+  if (nextUsername) {
+    form.username = nextUsername
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -133,7 +131,9 @@ async function handleLogin() {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: radial-gradient(circle at 20% 16%, rgba(79, 70, 229, 0.28), transparent 30%), radial-gradient(circle at 82% 12%, rgba(6, 182, 212, 0.24), transparent 28%), linear-gradient(135deg, #0b1020 0%, #111827 52%, #0f172a 100%);
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.96) 48%, rgba(17, 24, 39, 0.98) 100%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 12px);
   position: relative;
   overflow: hidden;
 }
