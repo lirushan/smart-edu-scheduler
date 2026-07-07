@@ -67,6 +67,44 @@ public class RoleService {
         return buildTree(menus);
     }
 
+    /**
+     * 创建角色
+     */
+    @Transactional
+    public SysRole createRole(String roleName, String roleCode, String description) {
+        // 检查角色编码唯一性
+        LambdaQueryWrapper<SysRole> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SysRole::getRoleCode, roleCode);
+        if (sysRoleMapper.selectCount(wrapper) > 0) {
+            throw new BusinessException(BizError.CONFLICT.getCode(), "角色编码已存在");
+        }
+
+        SysRole role = new SysRole();
+        role.setRoleName(roleName);
+        role.setRoleCode(roleCode);
+        role.setDescription(description);
+        role.setStatus(1); // 默认启用
+        role.setCreateTime(java.time.LocalDateTime.now());
+        role.setUpdateTime(java.time.LocalDateTime.now());
+        sysRoleMapper.insert(role);
+        return role;
+    }
+
+    /**
+     * 编辑角色基本信息（不包含菜单权限）
+     */
+    @Transactional
+    public SysRole updateRole(Long id, String roleName, String description) {
+        SysRole role = sysRoleMapper.selectById(id);
+        if (role == null) {
+            throw new BusinessException(BizError.NOT_FOUND.getCode(), "角色不存在");
+        }
+        role.setRoleName(roleName);
+        role.setDescription(description);
+        sysRoleMapper.updateById(role);
+        return role;
+    }
+
     @Transactional
     public void updateStatus(Long id, Integer status) {
         SysRole role = sysRoleMapper.selectById(id);

@@ -18,6 +18,8 @@
           <el-option label="停用" :value="0" />
         </el-select>
         <el-button type="primary" :icon="Search" @click="search">搜索</el-button>
+        <div class="toolbar-spacer" />
+        <el-button type="success" :icon="Plus" @click="openCreateDialog">新增角色</el-button>
       </div>
 
       <el-table :data="roles" stripe v-loading="loading" highlight-current-row @current-change="selectRole">
@@ -41,8 +43,9 @@
             />
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="110" fixed="right">
+        <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
+            <el-button link type="primary" @click.stop="openEditDialog(row)">编辑</el-button>
             <el-button link type="primary" @click.stop="selectRole(row)">权限</el-button>
           </template>
         </el-table-column>
@@ -96,11 +99,47 @@
         </div>
       </div>
     </section>
+
+    <!-- 新增/编辑角色弹窗 -->
+    <el-dialog
+      v-model="dialogVisible"
+      :title="dialogMode === 'create' ? '新增角色' : '编辑角色'"
+      width="480px"
+      :close-on-click-modal="false"
+      destroy-on-close
+    >
+      <el-form ref="formRef" :model="form" :rules="formRules" label-width="80px">
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input v-model="form.roleName" placeholder="请输入角色名称" maxlength="50" />
+        </el-form-item>
+        <el-form-item label="角色编码" prop="roleCode">
+          <el-input
+            v-model="form.roleCode"
+            placeholder="请输入角色编码"
+            maxlength="50"
+            :disabled="dialogMode === 'edit'"
+          />
+        </el-form-item>
+        <el-form-item label="描述" prop="description">
+          <el-input
+            v-model="form.description"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入角色描述（可选）"
+            maxlength="200"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitting" @click="submitForm">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue'
+import { nextTick, onMounted, reactive, ref } from 'vue'
 import {
   Avatar,
   Calendar,
@@ -115,6 +154,7 @@ import {
   Menu as MenuIcon,
   Monitor,
   Notebook,
+  Plus,
   Reading,
   Refresh,
   Search,
@@ -177,6 +217,76 @@ const roles = ref<RoleItem[]>([])
 const selectedRole = ref<RoleItem | null>(null)
 const menuTree = ref<MenuNode[]>([])
 const treeRef = ref()
+
+// ---- 新增/编辑角色弹窗 ----
+const dialogVisible = ref(false)
+const dialogMode = ref<'create' | 'edit'>('create')
+const editingId = ref<number | null>(null)
+const submitting = ref(false)
+const formRef = ref()
+
+const form = reactive({
+  roleName: '',
+  roleCode: '',
+  description: '',
+})
+
+const formRules = {
+  roleName: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
+  roleCode: [{ required: true, message: '请输入角色编码', trigger: 'blur' }],
+}
+
+function resetForm() {
+  form.roleName = ''
+  form.roleCode = ''
+  form.description = ''
+  editingId.value = null
+  formRef.value?.resetFields()
+}
+
+function openCreateDialog() {
+  dialogMode.value = 'create'
+  resetForm()
+  dialogVisible.value = true
+}
+
+function openEditDialog(row: RoleItem) {
+  dialogMode.value = 'edit'
+  editingId.value = row.id
+  form.roleName = row.roleName
+  form.roleCode = row.roleCode
+  form.description = row.description || ''
+  dialogVisible.value = true
+}
+
+async function submitForm() {
+  const valid = await formRef.value?.validate().catch(() => false)
+  if (!valid) return
+
+  submitting.value = true
+  try {
+    if (dialogMode.value === 'create') {
+      await roleApi.create({
+        roleName: form.roleName,
+        roleCode: form.roleCode,
+        description: form.description,
+      })
+      ElMessage.success('角色创建成功')
+    } else {
+      await roleApi.update(editingId.value!, {
+        roleName: form.roleName,
+        description: form.description,
+      })
+      ElMessage.success('角色信息已更新')
+    }
+    dialogVisible.value = false
+    await fetchRoles()
+  } catch {
+    // 错误已由 http 拦截器统一提示
+  } finally {
+    submitting.value = false
+  }
+}
 
 async function fetchRoles() {
   loading.value = true
@@ -311,6 +421,10 @@ onMounted(async () => {
 
 .status-select {
   width: 116px;
+}
+
+.toolbar-spacer {
+  flex: 1;
 }
 
 .role-name {

@@ -83,6 +83,10 @@ export const roleApi = {
   list: (params?: Record<string, any>) => http.get('/admin/roles', { params }),
   detail: (id: number) => http.get(`/admin/roles/${id}`),
   menuTree: () => http.get('/admin/roles/menus/tree'),
+  create: (data: { roleName: string; roleCode: string; description?: string }) =>
+    http.post('/admin/roles', data),
+  update: (id: number, data: { roleName: string; description?: string }) =>
+    http.put(`/admin/roles/${id}`, data),
   toggleStatus: (id: number, status: number) => http.put(`/admin/roles/${id}/status`, { status }),
   updateMenus: (id: number, menuIds: number[]) => http.put(`/admin/roles/${id}/menus`, { menuIds }),
 }

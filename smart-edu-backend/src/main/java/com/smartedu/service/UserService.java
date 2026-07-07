@@ -40,6 +40,8 @@ public class UserService {
         wrapper.orderByAsc(SysUser::getCreateTime);
 
         Page<SysUser> pageResult = sysUserMapper.selectPage(Page.of(page, size), wrapper);
+        // 清除密码哈希，防止敏感字段泄漏
+        pageResult.getRecords().forEach(user -> user.setPassword(null));
         return PageResult.of(pageResult.getTotal(), pageResult.getCurrent(),
                 pageResult.getSize(), pageResult.getRecords());
     }
@@ -55,6 +57,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword() != null ? user.getPassword() : "password123"));
         user.setStatus(1);
         sysUserMapper.insert(user);
+        user.setPassword(null); // 清除密码哈希，防止敏感字段泄漏
         return user;
     }
 
@@ -77,6 +80,7 @@ public class UserService {
         }
 
         sysUserMapper.updateById(existing);
+        existing.setPassword(null); // 清除密码哈希，防止敏感字段泄漏
         return existing;
     }
 
