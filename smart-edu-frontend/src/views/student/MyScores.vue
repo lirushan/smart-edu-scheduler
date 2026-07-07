@@ -42,8 +42,10 @@ const avgGpa = computed(() => {
   return (sum / scores.value.length).toFixed(1)
 })
 
-function gradeTagType(level: string) {
-  const map: Record<string, string> = { '优秀': 'success', '良好': '', '中等': 'warning', '及格': 'warning', '不及格': 'danger' }
+type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
+
+function gradeTagType(level: string): TagType {
+  const map: Record<string, TagType> = { '优秀': 'success', '良好': 'primary', '中等': 'warning', '及格': 'warning', '不及格': 'danger' }
   return map[level] || 'info'
 }
 
@@ -68,3 +70,5 @@ onMounted(async () => {
   .loading-wrap { padding: 40px 0; }
 }
 </style>
+
+

@@ -30,5 +30,5 @@ frontend/dist/
 # Logs
 *.log
 .events
-.workbuddy
+.workbuddy/**
 **/logs/**

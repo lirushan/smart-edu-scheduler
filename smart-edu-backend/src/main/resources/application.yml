@@ -127,6 +127,9 @@ spring:
 
 ---
 # ===== Docker Profile =====
+server:
+  port: 8080
+
 spring:
   config:
     activate:
@@ -173,3 +176,5 @@ spring:
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USER}
     password: ${RABBITMQ_PASS}
+
+

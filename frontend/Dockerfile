@@ -8,7 +8,7 @@ COPY smart-edu-frontend/package.json smart-edu-frontend/package-lock.json* ./
 RUN npm ci --legacy-peer-deps
 
 COPY smart-edu-frontend .
-RUN npm run build
+RUN npx vite build
 
 # ===========================
 # Stage 2: Serve with Nginx

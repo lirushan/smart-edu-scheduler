@@ -2,6 +2,11 @@
 -- 智教通 V1.0 — 全量建表 DDL + 种子数据
 -- 数据库：smart_edu
 -- 编码：utf8mb4
+
+SET NAMES utf8mb4;
+SET character_set_client = utf8mb4;
+SET character_set_connection = utf8mb4;
+SET character_set_results = utf8mb4;
 -- ============================================================
 
 CREATE DATABASE IF NOT EXISTS smart_edu
@@ -291,7 +296,7 @@ CREATE TABLE exam_record (
 -- ============================================================
 
 -- 密码均为 BCrypt("password123") → $2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5Eh
--- 简化种子数据用占位哈希
+-- 种子用户默认密码: password123
 SET @bcrypt_pwd = '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5Eh';
 
 -- ===== 系统用户 =====
@@ -451,3 +456,5 @@ INSERT INTO exam_paper_question (paper_id, question_id, question_order, score) V
 (1, 2, 2, 25),
 (1, 3, 3, 20),
 (1, 4, 4, 30);
+
+

@@ -28,7 +28,7 @@
       </el-table-column>
       <el-table-column label="范围" width="80">
         <template #default="{ row }">
-          <el-tag :type="row.scope === 1 ? 'success' : ''" size="small">{{ row.scope === 1 ? '全局' : '个人' }}</el-tag>
+          <el-tag :type="row.scope === 1 ? 'success' : 'info'" size="small">{{ row.scope === 1 ? '全局' : '个人' }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="审核" width="80">
@@ -181,3 +181,4 @@ onMounted(fetchQuestions)
 .search-input { width: 240px; }
 .filter-select { width: 140px; }
 </style>
+

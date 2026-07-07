@@ -1,15 +1,15 @@
-import axios from 'axios'
+import axios, { type AxiosRequestConfig } from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
 
-const http = axios.create({
+const axiosInstance = axios.create({
   baseURL: '/api/v1',
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 })
 
 // 请求拦截器
-http.interceptors.request.use(
+axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token')
     if (token) {
@@ -21,7 +21,7 @@ http.interceptors.request.use(
 )
 
 // 响应拦截器
-http.interceptors.response.use(
+axiosInstance.interceptors.response.use(
   (response) => {
     const { data } = response
     if (data.code !== 200) {
@@ -44,4 +44,14 @@ http.interceptors.response.use(
   },
 )
 
+interface ApiClient {
+  get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>
+  post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T>
+  put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T>
+  delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>
+}
+
+const http = axiosInstance as unknown as ApiClient
+
 export default http
+

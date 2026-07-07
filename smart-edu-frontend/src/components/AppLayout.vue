@@ -22,20 +22,20 @@
       </div>
 
       <nav class="sidebar-nav">
-        <template v-for="item in menuItems" :key="item.id || item.label">
+        <template v-for="item in menuItems" :key="item.section || item.path">
           <div v-if="item.section" class="nav-section">{{ item.section }}</div>
           <router-link
             v-else
-            :to="item.path"
+            :to="item.path || '/'"
             class="nav-item"
-            :class="{ active: isActive(item.path) }"
+            :class="{ active: isActive(item.path || '') }"
           >
             <span class="nav-icon" v-html="item.iconSvg || ''"></span>
             <el-icon v-if="!item.iconSvg && item.iconComp" :size="18">
               <component :is="item.iconComp" />
             </el-icon>
             <span class="nav-label">{{ item.label }}</span>
-            <span v-if="isActive(item.path)" class="active-dot"></span>
+            <span v-if="isActive(item.path || '')" class="active-dot"></span>
           </router-link>
         </template>
       </nav>
@@ -106,17 +106,25 @@ const roleText = computed(() => {
   return map[userStore.role] || '用户'
 })
 
-const menuItems = computed(() => {
+type MenuEntry = {
+  section?: string
+  path?: string
+  label?: string
+  iconComp?: any
+  iconSvg?: string
+}
+
+const menuItems = computed<MenuEntry[]>(() => {
   const role = userStore.role
   const iconMap: Record<string, any> = {
     Monitor, Reading, Calendar, List, DataLine, Notebook, UserFilled, Setting,
     Clock, View, Star, Document, Upload, Checked, Collection, Timer
   }
 
-  const makeItem = (path: string, label: string, icon: any) => ({
+  const makeItem = (path: string, label: string, icon: any): MenuEntry => ({
     path, label, iconComp: icon
   })
-  const makeSection = (label: string) => ({ section: label })
+  const makeSection = (label: string): MenuEntry => ({ section: label })
 
   if (role === 'student') return [
     makeSection('主菜单'),
@@ -202,12 +210,10 @@ async function handleLogout() {
 onMounted(() => {
   updateTime()
   timer = setInterval(updateTime, 30000)
-  // 读取主题偏好
   const savedTheme = localStorage.getItem('theme')
-  if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-    isDark.value = true
-    document.documentElement.classList.add('dark')
-  }
+  isDark.value = savedTheme === 'dark'
+  document.documentElement.classList.toggle('dark', isDark.value)
+  document.documentElement.classList.toggle('light', !isDark.value)
 })
 
 onUnmounted(() => clearInterval(timer))
@@ -239,7 +245,7 @@ onUnmounted(() => clearInterval(timer))
 
 // 玻璃态侧边栏
 .sidebar-glass {
-  width: 240px;
+  width: 252px;
   min-height: 100vh;
   position: fixed;
   left: 0; top: 0; bottom: 0;
@@ -254,24 +260,24 @@ onUnmounted(() => clearInterval(timer))
   );
   backdrop-filter: blur(24px) saturate(1.4);
   -webkit-backdrop-filter: blur(24px) saturate(1.4);
-  border-right: 1px solid rgba(139, 92, 246, 0.15);
-  box-shadow: 4px 0 24px rgba(139, 92, 246, 0.08);
+  border-right: 1px solid rgba(148, 163, 184, 0.14);
+  box-shadow: 18px 0 56px rgba(15, 23, 42, 0.18);
 }
 
 .logo-area {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 20px 18px;
+  padding: 22px 20px;
   border-bottom: 1px solid rgba(139, 92, 246, 0.12);
   .logo-text {
     font-size: 18px;
     font-weight: 700;
-    background: linear-gradient(135deg, #a78bfa, #667eea);
+    background: linear-gradient(135deg, #ffffff, #67e8f9);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    letter-spacing: 2px;
+    letter-spacing: 0;
   }
 }
 
@@ -279,26 +285,26 @@ onUnmounted(() => clearInterval(timer))
 .sidebar-nav {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 10px;
+  padding: 12px 12px;
 }
 
 .nav-section {
   padding: 12px 12px 4px;
   font-size: 10px;
   font-weight: 600;
-  color: rgba(167, 139, 250, 0.4);
+  color: rgba(148, 163, 184, 0.62);
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 0;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 11px 12px;
   margin: 1px 0;
-  border-radius: 10px;
-  color: rgba(255, 255, 255, 0.55);
+  border-radius: 8px;
+  color: rgba(226, 232, 240, 0.66);
   text-decoration: none;
   font-size: 13px;
   font-weight: 500;
@@ -311,7 +317,7 @@ onUnmounted(() => clearInterval(timer))
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.08), transparent);
+    background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.08), transparent);
     transform: translateX(-100%);
     transition: transform 0.5s ease;
     pointer-events: none;
@@ -319,15 +325,15 @@ onUnmounted(() => clearInterval(timer))
 
   &:hover {
     color: rgba(255, 255, 255, 0.9);
-    background: rgba(139, 92, 246, 0.1);
+    background: rgba(148, 163, 184, 0.09);
     &::after { transform: translateX(0); }
   }
 
   &.active {
     color: #fff;
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(102, 126, 234, 0.2));
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.32), rgba(6, 182, 212, 0.18));
     animation: sidebarGlow 3s ease-in-out infinite;
-    box-shadow: 0 0 12px rgba(139, 92, 246, 0.2);
+    box-shadow: 0 10px 24px rgba(6, 182, 212, 0.12);
     font-weight: 600;
 
     .nav-icon { opacity: 1; }
@@ -339,7 +345,7 @@ onUnmounted(() => clearInterval(timer))
 .active-dot {
   width: 4px; height: 4px;
   border-radius: 50%;
-  background: #a78bfa;
+  background: #22d3ee;
   animation: breathe 2s ease-in-out infinite;
 }
 
@@ -354,10 +360,10 @@ onUnmounted(() => clearInterval(timer))
   align-items: center;
   gap: 10px;
   padding: 8px;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s;
-  &:hover { background: rgba(139, 92, 246, 0.1); }
+  &:hover { background: rgba(148, 163, 184, 0.09); }
   .user-detail { flex: 1; min-width: 0; }
   .user-name { font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 500; }
   .user-role { font-size: 11px; color: rgba(255,255,255,0.4); }
@@ -375,12 +381,12 @@ onUnmounted(() => clearInterval(timer))
   color: rgba(255,255,255,0.35);
   cursor: pointer;
   transition: all 0.2s;
-  &:hover { background: rgba(139, 92, 246, 0.1); color: rgba(255,255,255,0.6); }
+  &:hover { background: rgba(148, 163, 184, 0.09); color: rgba(255,255,255,0.6); }
 }
 
 // 主内容
 .main-area {
-  margin-left: 240px;
+  margin-left: 252px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -390,18 +396,18 @@ onUnmounted(() => clearInterval(timer))
 }
 
 .app-header {
-  height: 56px;
+  height: 64px;
   display: flex;
   align-items: center;
-  padding: 0 24px;
+  padding: 0 28px;
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(255, 255, 255, 0.6) !important;
-  border-bottom: 1px solid rgba(139, 92, 246, 0.08);
+  background: rgba(255, 255, 255, 0.72) !important;
+  border-bottom: 1px solid rgba(79, 70, 229, 0.08);
 
   html.dark & {
-    background: rgba(20, 18, 45, 0.6) !important;
+    background: rgba(11, 16, 32, 0.72) !important;
     border-bottom-color: rgba(139, 92, 246, 0.1);
   }
 
@@ -416,8 +422,12 @@ onUnmounted(() => clearInterval(timer))
 }
 
 .page-content {
-  padding: 20px 24px;
+  padding: 24px 28px;
   flex: 1;
   position: relative;
 }
 </style>
+
+
+
+

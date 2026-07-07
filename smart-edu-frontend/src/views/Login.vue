@@ -14,7 +14,7 @@
             <path d="M2 12l10 5 10-5" stroke="#8b5cf6" stroke-width="2" fill="none"/>
           </svg>
         </div>
-        <h1>智 教 通</h1>
+        <h1>智教通</h1>
         <p>学生课程报名与排课管理系统</p>
       </div>
 
@@ -27,11 +27,11 @@
         </el-form-item>
         <el-form-item>
           <el-radio-group v-model="form.role" class="role-group">
-            <el-radio-button value="student">🎓 学生</el-radio-button>
-            <el-radio-button value="teacher">👨‍🏫 教师</el-radio-button>
-            <el-radio-button value="academic">📋 教务</el-radio-button>
-            <el-radio-button value="admin">⚙️ 管理员</el-radio-button>
-            <el-radio-button value="qb_admin">📝 题库管理</el-radio-button>
+            <el-radio-button value="student">学生</el-radio-button>
+            <el-radio-button value="teacher">教师</el-radio-button>
+            <el-radio-button value="academic">教务</el-radio-button>
+            <el-radio-button value="admin">管理员</el-radio-button>
+            <el-radio-button value="qb_admin">题库管理</el-radio-button>
           </el-radio-group>
         </el-form-item>
         <el-form-item>
@@ -133,16 +133,16 @@ async function handleLogin() {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 30%, #16213e 60%, #0f3460 100%);
+  background: radial-gradient(circle at 20% 16%, rgba(79, 70, 229, 0.28), transparent 30%), radial-gradient(circle at 82% 12%, rgba(6, 182, 212, 0.24), transparent 28%), linear-gradient(135deg, #0b1020 0%, #111827 52%, #0f172a 100%);
   position: relative;
   overflow: hidden;
 }
 
 .login-card {
-  width: 440px;
+  width: 460px;
   position: relative;
   z-index: 10;
-  padding: 44px 40px;
+  padding: 42px 42px 34px;
 }
 
 .login-logo {
@@ -154,18 +154,18 @@ async function handleLogin() {
   }
 
   h1 {
-    font-size: 24px;
+    font-size: 30px;
     font-weight: 700;
-    background: linear-gradient(135deg, #a78bfa, #667eea);
+    background: linear-gradient(135deg, #ffffff, #67e8f9);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    letter-spacing: 4px;
+    letter-spacing: 0;
     margin: 0 0 4px;
   }
   p {
     color: var(--color-text-muted);
-    font-size: 13px;
+    font-size: 14px;
     margin: 0;
   }
 }
@@ -174,21 +174,21 @@ async function handleLogin() {
   width: 100%;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 8px;
   :deep(.el-radio-button__inner) {
-    min-width: 78px;
+    min-width: 76px;
     text-align: center;
     font-size: 12px;
-    border-radius: 8px !important;
+    border-radius: 8px !important; border: 1px solid rgba(148, 163, 184, 0.18) !important; background: rgba(255, 255, 255, 0.06) !important;
   }
 }
 
 .login-btn {
   width: 100%;
-  height: 44px;
+  height: 46px;
   font-size: 15px;
   font-weight: 600;
-  letter-spacing: 2px;
+  letter-spacing: 0;
 }
 
 .login-footer {
@@ -197,8 +197,9 @@ async function handleLogin() {
 }
 
 .demo-hint {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--color-text-muted);
   margin: 2px 0;
 }
 </style>
+

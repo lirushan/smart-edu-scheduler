@@ -8,7 +8,7 @@
         <thead>
           <tr>
             <th class="time-col">节次</th>
-            <th v-for="d in 7" :key="d" :class="{ today: d === today }">
+            <th v-for="d in 7" :key="d" :class="{ 'is-today': d === todayDay }">
               {{ dayLabels[d-1] }}
             </th>
           </tr>
@@ -17,7 +17,7 @@
           <tr v-for="p in 8" :key="p">
             <td class="time-col">第{{ p }}节</td>
             <td v-for="d in 7" :key="d" class="cell"
-              :class="{ today: d === today, has-course: getCourse(d, p) }"
+              :class="{ 'is-today': d === todayDay, 'has-course': getCourse(d, p) }"
             >
               <div v-if="getCourse(d, p)" class="schedule-item" :style="{ background: getColor(getCourse(d,p)?.courseName || '') }">
                 <div class="s-name">{{ getCourse(d, p)?.courseName }}</div>
@@ -37,7 +37,7 @@ import { ref, onMounted } from 'vue'
 import { scheduleApi } from '@/api'
 
 const dayLabels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
-const today = new Date().getDay() || 7
+const todayDay = new Date().getDay() || 7
 
 const scheduleData = ref<any[]>([])
 
@@ -85,12 +85,12 @@ onMounted(async () => {
 
     th, td { border: 1px solid rgba(139,92,246,0.08); padding: 6px 8px; text-align: center; min-width: 100px; height: 56px; }
     th { color: var(--color-text-secondary); font-weight: 500; font-size: 12px; }
-    th.today { background: rgba(139,92,246,0.08); color: var(--color-brand-light); }
+    th.is-today { background: rgba(139,92,246,0.08); color: var(--color-brand-light); }
 
     .time-col { color: var(--color-text-muted); font-size: 11px; min-width: 60px; font-weight: 500; }
 
     .cell { position: relative; }
-    .cell.today { background: rgba(139,92,246,0.03); }
+    .cell.is-today { background: rgba(139,92,246,0.03); }
 
     .schedule-item {
       position: absolute; inset: 2px;

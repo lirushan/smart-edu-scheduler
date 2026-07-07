@@ -3,5 +3,14 @@
 </template>
 
 <script setup lang="ts">
-// App root component
+import { onMounted } from 'vue'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
+
+onMounted(() => {
+  if (userStore.token && !userStore.userInfo) {
+    userStore.fetchUserInfo()
+  }
+})
 </script>
