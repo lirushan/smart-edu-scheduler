@@ -1,5 +1,6 @@
 package com.smartedu.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,6 +23,8 @@ public class SysUser {
     private Long id;
 
     private String username;
+    
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     private String realName;
     private Integer userType;     // 1=学生 2=教师 3=教务 4=管理员 5=题库管理员
@@ -44,3 +47,5 @@ public class SysUser {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 }
+
+

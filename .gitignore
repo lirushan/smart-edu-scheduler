@@ -32,3 +32,4 @@ frontend/dist/
 .events
 .workbuddy/**
 **/logs/**
+.m2/**
