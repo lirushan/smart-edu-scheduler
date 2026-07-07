@@ -85,6 +85,8 @@ public class ExamService {
             record.setStatus(1);
             record.setObjectiveScore(BigDecimal.ZERO);
             record.setTotalScore(BigDecimal.ZERO);
+            record.setCreateTime(now);
+            record.setUpdateTime(now);
             recordMapper.insert(record);
         } else if (record.getStatus() == 0) {
             record.setStartTime(now);
@@ -190,6 +192,27 @@ public class ExamService {
 
         ExamExam exam = examMapper.selectById(examId);
 
+        // 解析 aiFeedback：向后兼容旧版纯文本和新版 JSON 结构
+        String aiFeedbackText = "";
+        String aiReasonJson = "[]";
+        String rawAiFeedback = record.getAiFeedback();
+        if (rawAiFeedback != null && !rawAiFeedback.isBlank()) {
+            try {
+                com.fasterxml.jackson.databind.JsonNode node = objectMapper.readTree(rawAiFeedback);
+                if (node.has("summary") && node.has("details")) {
+                    // 新版结构化数据
+                    aiFeedbackText = node.get("summary").asText();
+                    aiReasonJson = node.get("details").toString();
+                } else {
+                    // 旧版纯文本（向后兼容）
+                    aiFeedbackText = rawAiFeedback;
+                }
+            } catch (Exception e) {
+                // 不是有效 JSON → 当作旧版纯文本
+                aiFeedbackText = rawAiFeedback;
+            }
+        }
+
         return ExamResultVO.builder()
                 .recordId(record.getId())
                 .examId(examId)
@@ -197,7 +220,8 @@ public class ExamService {
                 .totalScore(exam != null ? exam.getTotalScore() : 0)
                 .objectiveScore(record.getObjectiveScore())
                 .finalScore(record.getTotalScore())
-                .aiFeedback(record.getAiFeedback())
+                .aiFeedback(aiFeedbackText)
+                .aiReason(aiReasonJson)
                 .status(record.getStatus())
                 .submitTime(record.getSubmitTime())
                 .build();

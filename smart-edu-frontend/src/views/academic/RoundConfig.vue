@@ -1,6 +1,6 @@
 <template>
   <div class="page-card round-config">
-    <h2 class="page-title">选课轮次配置</h2>
+    <PageHeader title="选课轮次配置" />
     <el-button type="primary" @click="showCreateDialog" style="margin-bottom:16px">新建轮次</el-button>
 
     <el-table :data="rounds" stripe v-loading="loading">
@@ -53,6 +53,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { roundApi } from '@/api'
+import PageHeader from '@/components/PageHeader.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const rounds = ref<any[]>([])
@@ -116,5 +117,4 @@ onMounted(fetchRounds)
 </script>
 
 <style lang="scss" scoped>
-.page-title { font-size: 20px; font-weight: 700; margin: 0 0 12px; color: var(--color-text); }
 </style>

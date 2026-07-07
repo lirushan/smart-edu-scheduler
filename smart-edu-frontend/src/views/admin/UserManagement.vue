@@ -1,6 +1,6 @@
 <template>
   <div class="page-card user-management">
-    <h2 class="page-title">用户管理</h2>
+    <PageHeader title="用户管理" />
     <div class="toolbar">
       <el-input v-model="keyword" placeholder="搜索用户名/姓名/院系..." clearable class="search-input" @keyup.enter="search">
         <template #prefix><el-icon><Search /></el-icon></template>
@@ -72,6 +72,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { Search } from '@element-plus/icons-vue'
+import PageHeader from '@/components/PageHeader.vue'
 import { userApi } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -141,6 +142,5 @@ onMounted(fetchUsers)
 </script>
 
 <style lang="scss" scoped>
-.page-title { font-size: 20px; font-weight: 700; margin: 0 0 8px; color: var(--color-text); }
 .search-input { width: 240px; }
 </style>

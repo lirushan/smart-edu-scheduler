@@ -1,7 +1,6 @@
 <template>
   <div class="page-card course-market">
-    <h2 class="page-title">课程广场</h2>
-    <p class="page-subtitle">浏览并选择本学期课程</p>
+    <PageHeader title="课程广场" subtitle="浏览并选择本学期课程" />
 
     <!-- 搜索栏 -->
     <div class="toolbar">
@@ -18,12 +17,8 @@
     </div>
 
     <!-- 课程列表 -->
-    <div v-if="loading" class="loading-wrap">
-      <el-skeleton :rows="4" animated />
-    </div>
-    <div v-else-if="offerings.length === 0" class="empty-hint">
-      暂无符合条件的课程
-    </div>
+    <LoadingState v-if="loading" :rows="4" />
+    <EmptyState v-else-if="offerings.length === 0" description="暂无符合条件的课程" />
     <div v-else class="course-grid">
       <div v-for="o in offerings" :key="o.id" class="course-card page-card card-hover">
         <div class="course-header">
@@ -74,6 +69,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { Search, UserFilled, Calendar, Location } from '@element-plus/icons-vue'
+import PageHeader from '@/components/PageHeader.vue'
+import EmptyState from '@/components/EmptyState.vue'
+import LoadingState from '@/components/LoadingState.vue'
 import { courseApi, enrollmentApi } from '@/api'
 import { ElMessage } from 'element-plus'
 
@@ -123,9 +121,6 @@ onMounted(fetchOfferings)
 
 <style lang="scss" scoped>
 .course-market {
-  .page-title { font-size: 20px; font-weight: 700; margin: 0; color: var(--color-text); }
-  .page-subtitle { font-size: 13px; color: var(--color-text-muted); margin: 4px 0 16px; }
-
   .search-input { width: 280px; }
   .filter-select { width: 160px; }
 
@@ -162,7 +157,7 @@ onMounted(fetchOfferings)
     }
   }
 
-  .loading-wrap { padding: 40px 0; }
-  .empty-hint { text-align: center; color: var(--color-text-muted); padding: 60px 0; font-size: 14px; }
+  .loading-wrap { display: none; }
+  .empty-hint { display: none; }
 }
 </style>

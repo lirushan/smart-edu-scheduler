@@ -16,6 +16,8 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,6 +55,7 @@ public class ExamSubmitHandler {
             // 只处理填空题 (type=4)
             BigDecimal subjectiveScore = BigDecimal.ZERO;
             StringBuilder feedbackBuilder = new StringBuilder();
+            List<Map<String, Object>> scoringDetails = new ArrayList<>();
 
             for (ExamQuestion q : questions) {
                 if (q.getQuestionType() != 4) continue;
@@ -63,15 +66,31 @@ public class ExamSubmitHandler {
                         q.getContent(), q.getAnswer(), studentAnswer, BigDecimal.ONE);
 
                 subjectiveScore = subjectiveScore.add(result.score());
+
+                // 构建每题评分详情
+                Map<String, Object> detail = new HashMap<>();
+                detail.put("questionId", q.getId());
+                detail.put("score", result.score());
+                detail.put("feedback", result.feedback() != null ? result.feedback() : "");
+                detail.put("reason", result.reasoning() != null ? result.reasoning() : "");
+                scoringDetails.add(detail);
+
                 if (result.feedback() != null && !result.feedback().isEmpty()) {
                     feedbackBuilder.append("题").append(q.getId()).append(": ")
                             .append(result.feedback()).append("\n");
                 }
             }
 
+            // 存储结构化 AI 评分数据（向后兼容：summary + details）
+            Map<String, Object> aiData = new HashMap<>();
+            aiData.put("summary", feedbackBuilder.toString());
+            aiData.put("details", scoringDetails);
+            String aiDataJson = objectMapper.writeValueAsString(aiData);
+            record.setAiFeedback(aiDataJson);
+            record.setAiReason(objectMapper.writeValueAsString(scoringDetails));
+
             // 更新总分
             record.setTotalScore(record.getObjectiveScore().add(subjectiveScore));
-            record.setAiFeedback(feedbackBuilder.toString());
             recordMapper.updateById(record);
 
             log.info("异步评分完成: recordId={}, totalScore={}", recordId, record.getTotalScore());

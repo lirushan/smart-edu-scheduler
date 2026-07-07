@@ -24,9 +24,13 @@ const RoleManagement = () => import('@/views/admin/RoleManagement.vue')
 // 教务端
 const AcademicDashboard = () => import('@/views/academic/Dashboard.vue')
 const RoundConfig = () => import('@/views/academic/RoundConfig.vue')
-
-// Skeleton pages
-const SkeletonPage = () => import('@/components/SkeletonPage.vue')
+const EnrollmentMonitor = () => import('@/views/academic/EnrollmentMonitor.vue')
+const ScheduleManagement = () => import('@/views/academic/ScheduleManagement.vue')
+const ExamManagement = () => import('@/views/academic/ExamManagement.vue')
+const ScoreApproval = () => import('@/views/academic/ScoreApproval.vue')
+const TeachingEvaluation = () => import('@/views/academic/TeachingEvaluation.vue')
+const TrainingPlan = () => import('@/views/academic/TrainingPlan.vue')
+const NewStudentImport = () => import('@/views/academic/NewStudentImport.vue')
 
 // 题库管理端
 const QbAdminDashboard = () => import('@/views/qb-admin/Dashboard.vue')
@@ -83,13 +87,13 @@ const routes: RouteRecordRaw[] = [
       // ===== 教务端 =====
       { path: 'academic', name: 'AcademicDashboard', component: AcademicDashboard, meta: { title: '工作台', role: 'academic' } },
       { path: 'academic/rounds', name: 'RoundConfig', component: RoundConfig, meta: { title: '选课轮次', role: 'academic' } },
-      { path: 'academic/enroll-monitor', name: 'EnrollmentMonitor', component: () => SkeletonPage, meta: { title: '选课监控', role: 'academic' }, props: { title: '选课监控' } },
-      { path: 'academic/schedules', name: 'ScheduleManagement', component: () => SkeletonPage, meta: { title: '排课管理', role: 'academic' }, props: { title: '排课管理' } },
-      { path: 'academic/exams', name: 'ExamManagement', component: () => SkeletonPage, meta: { title: '考试管理', role: 'academic' }, props: { title: '考试管理' } },
-      { path: 'academic/scores', name: 'ScoreApproval', component: () => SkeletonPage, meta: { title: '成绩审核', role: 'academic' }, props: { title: '成绩审核' } },
-      { path: 'academic/evaluation', name: 'TeachingEvaluation', component: () => SkeletonPage, meta: { title: '教学评价', role: 'academic' }, props: { title: '教学评价' } },
-      { path: 'academic/training-plan', name: 'TrainingPlan', component: () => SkeletonPage, meta: { title: '培养方案', role: 'academic' }, props: { title: '培养方案' } },
-      { path: 'academic/new-student', name: 'NewStudentImport', component: () => SkeletonPage, meta: { title: '新生导入', role: 'academic' }, props: { title: '新生导入' } },
+      { path: 'academic/enroll-monitor', name: 'EnrollmentMonitor', component: EnrollmentMonitor, meta: { title: '选课监控', role: 'academic' } },
+      { path: 'academic/schedules', name: 'ScheduleManagement', component: ScheduleManagement, meta: { title: '排课管理', role: 'academic' } },
+      { path: 'academic/exams', name: 'ExamManagement', component: ExamManagement, meta: { title: '考试管理', role: 'academic' } },
+      { path: 'academic/scores', name: 'ScoreApproval', component: ScoreApproval, meta: { title: '成绩审核', role: 'academic' } },
+      { path: 'academic/evaluation', name: 'TeachingEvaluation', component: TeachingEvaluation, meta: { title: '教学评价', role: 'academic' } },
+      { path: 'academic/training-plan', name: 'TrainingPlan', component: TrainingPlan, meta: { title: '培养方案', role: 'academic' } },
+      { path: 'academic/new-student', name: 'NewStudentImport', component: NewStudentImport, meta: { title: '新生导入', role: 'academic' } },
 
       // ===== 题库管理端 =====
       { path: 'qb-admin', name: 'QbAdminDashboard', component: QbAdminDashboard, meta: { title: '工作台', role: 'qb_admin' } },

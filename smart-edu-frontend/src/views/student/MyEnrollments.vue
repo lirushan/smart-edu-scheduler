@@ -1,13 +1,14 @@
 <template>
   <div class="page-card my-enrollments">
-    <h2 class="page-title">我的选课</h2>
-    <p class="page-subtitle">已选 {{ enrollments.length }} 门课程</p>
+    <PageHeader title="我的选课" :subtitle="`已选 ${enrollments.length} 门课程`" />
 
-    <div v-if="loading" class="loading-wrap"><el-skeleton :rows="3" animated /></div>
-    <div v-else-if="enrollments.length === 0" class="empty-hint">
-      <p>你还没有选任何课程</p>
-      <el-button type="primary" @click="$router.push('/courses')">去课程广场选课</el-button>
-    </div>
+    <LoadingState v-if="loading" :rows="3" />
+    <EmptyState
+      v-else-if="enrollments.length === 0"
+      description="你还没有选任何课程"
+      action-text="去课程广场选课"
+      @action="$router.push('/courses')"
+    />
     <el-table v-else :data="enrollments" stripe class="enroll-table">
       <el-table-column prop="courseName" label="课程名称" min-width="160" />
       <el-table-column prop="teacherName" label="授课教师" width="100" />
@@ -30,6 +31,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { enrollmentApi } from '@/api'
+import PageHeader from '@/components/PageHeader.vue'
+import EmptyState from '@/components/EmptyState.vue'
+import LoadingState from '@/components/LoadingState.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const enrollments = ref<any[]>([])
@@ -67,10 +71,8 @@ onMounted(fetchData)
 
 <style lang="scss" scoped>
 .my-enrollments {
-  .page-title { font-size: 20px; font-weight: 700; margin: 0; color: var(--color-text); }
-  .page-subtitle { font-size: 13px; color: var(--color-text-muted); margin: 4px 0 16px; }
   .enroll-table { margin-top: 8px; }
-  .empty-hint { text-align: center; padding: 60px 0; p { color: var(--color-text-muted); margin-bottom: 16px; } }
-  .loading-wrap { padding: 40px 0; }
+  .empty-hint { display: none; }
+  .loading-wrap { display: none; }
 }
 </style>

@@ -107,3 +107,61 @@ export const roundApi = {
   delete: (id: number) => http.delete(`/academic/rounds/${id}`),
   toggleStatus: (id: number, status: number) => http.put(`/academic/rounds/${id}/status`, { status }),
 }
+
+// ===== 教务排课管理 =====
+export const academicScheduleApi = {
+  semesters: () => http.get('/academic/schedules/semesters'),
+  offerings: () => http.get('/academic/schedules/offerings'),
+  schedules: (params?: Record<string, any>) => http.get('/academic/schedules', { params }),
+}
+
+// ===== 教务考试管理 =====
+export const academicExamApi = {
+  list: (params?: Record<string, any>) => http.get('/academic/exams', { params }),
+  detail: (id: number) => http.get(`/academic/exams/${id}`),
+  create: (data: any) => http.post('/academic/exams', data),
+  update: (id: number, data: any) => http.put(`/academic/exams/${id}`, data),
+  delete: (id: number) => http.delete(`/academic/exams/${id}`),
+}
+
+// ===== 教务成绩审核 =====
+export const academicScoreApi = {
+  reviewList: (params?: Record<string, any>) => http.get('/academic/scores/review', { params }),
+  approve: (id: number) => http.put(`/academic/scores/${id}/approve`),
+  batchApprove: (ids: number[]) => http.put('/academic/scores/batch-approve', { ids }),
+  reject: (id: number) => http.put(`/academic/scores/${id}/reject`),
+}
+
+// ===== 教务教学评价 =====
+export const academicEvaluationApi = {
+  stats: () => http.get('/academic/evaluations'),
+  teacherDetails: (teacherId: number) => http.get(`/academic/evaluations/${teacherId}`),
+  allDetails: () => http.get('/academic/evaluations/all'),
+}
+
+// ===== 教务选课监控 =====
+export const academicEnrollmentApi = {
+  stats: () => http.get('/academic/enrollments/stats'),
+  details: (offeringId?: number) => http.get('/academic/enrollments/details', { params: offeringId ? { offeringId } : {} }),
+}
+
+// ===== 教务培养方案 =====
+export const academicTrainingPlanApi = {
+  list: (params?: Record<string, any>) => http.get('/academic/training-plans', { params }),
+  detail: (id: number) => http.get(`/academic/training-plans/${id}`),
+  create: (data: any) => http.post('/academic/training-plans', data),
+  update: (id: number, data: any) => http.put(`/academic/training-plans/${id}`, data),
+  delete: (id: number) => http.delete(`/academic/training-plans/${id}`),
+}
+
+// ===== 教务学生导入 =====
+export const academicStudentApi = {
+  preview: (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return http.post('/academic/students/preview', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
+  import: (students: any[]) => http.post('/academic/students/import', students),
+}

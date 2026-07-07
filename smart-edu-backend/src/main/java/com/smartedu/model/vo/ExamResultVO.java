@@ -26,8 +26,9 @@ public class ExamResultVO {
     private Integer durationMinutes;
     private BigDecimal objectiveScore;
     private BigDecimal finalScore;
-    private String aiFeedback;
-    private Integer status;          // 0=未开始 1=进行中 2=已交卷
+    private String aiFeedback;      // 评分反馈摘要文本（向后兼容）
+    private String aiReason;        // 每道题评分理由 JSON: [{"questionId":...,"score":...,"feedback":...,"reason":...}]
+    private Integer status;         // 0=未开始 1=进行中 2=已交卷
     private LocalDateTime submitTime;
     private List<ExamQuestion> questions; // 考试作答页试题（不含答案）
 }

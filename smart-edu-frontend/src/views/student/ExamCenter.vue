@@ -3,10 +3,11 @@
     <!-- 考试列表 -->
     <template v-if="!activeExam">
       <div class="page-card">
-        <h2 class="page-title">考试中心</h2>
-        <p class="page-subtitle">待考 {{ pendingExams.length }} 项 · 已完成 {{ doneExams.length }} 项</p>
+        <PageHeader title="考试中心" :subtitle="`待考 ${pendingExams.length} 项 · 已完成 ${doneExams.length} 项`" />
 
-        <div v-if="exams.length === 0" class="empty-hint">暂无考试安排</div>
+        <div v-if="exams.length === 0">
+          <EmptyState description="暂无考试安排" />
+        </div>
 
         <GlassCard v-for="e in exams" :key="e.id" :title="e.examName || e.courseName" :gradient-top="true">
           <template #header>
@@ -49,6 +50,16 @@
             <span>{{ formatCountdown(remainingSeconds) }}</span>
           </div>
         </div>
+
+        <!-- 切屏警告 -->
+        <el-alert
+          v-if="tabSwitchCount > 0"
+          :title="`系统检测到你已离开考试页面 ${tabSwitchCount} 次`"
+          :type="tabSwitchCount > 3 ? 'error' : 'warning'"
+          :closable="false"
+          show-icon
+          style="margin-bottom:16px"
+        />
 
         <div v-for="(q, idx) in questions" :key="q.id" class="question-card page-card">
           <div class="q-header">
@@ -94,6 +105,27 @@
           <div class="score-main">{{ resultData?.objectiveScore || resultData?.finalScore || 0 }}分</div>
           <div class="score-label">客观题得分</div>
         </div>
+
+        <!-- AI 评分详情 — 填空题逐题展示 -->
+        <div v-if="aiScoringDetails.length > 0" class="ai-scoring-section">
+          <div class="ai-scoring-title">
+            <el-tag type="primary" effect="dark" size="small" class="ai-badge">AI 评分</el-tag>
+            <span>填空题评分详情</span>
+          </div>
+          <div v-for="detail in aiScoringDetails" :key="detail.questionId" class="ai-score-item">
+            <div class="ai-score-header">
+              <span class="ai-q-label">第 {{ detail.questionId }} 题</span>
+              <el-tag :type="scoreTagType(detail.score)" size="small">{{ detail.score }} 分</el-tag>
+              <span class="ai-feedback-text">{{ detail.feedback }}</span>
+            </div>
+            <el-collapse v-if="detail.reason" class="ai-reason-collapse">
+              <el-collapse-item title="查看评分理由">
+                <p class="ai-reason-text">{{ detail.reason }}</p>
+              </el-collapse-item>
+            </el-collapse>
+          </div>
+        </div>
+
         <div v-if="resultData?.aiFeedback" class="ai-feedback">
           <h4>AI 评分反馈</h4>
           <pre>{{ resultData.aiFeedback }}</pre>
@@ -105,11 +137,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Timer, Clock, DataLine } from '@element-plus/icons-vue'
 import { examApi } from '@/api'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElNotification } from 'element-plus'
 import GlassCard from '@/components/GlassCard.vue'
+import PageHeader from '@/components/PageHeader.vue'
+import EmptyState from '@/components/EmptyState.vue'
 
 const exams = ref<any[]>([])
 const activeExam = ref<any>(null)
@@ -119,7 +153,9 @@ const answers = ref<Record<number, string>>({})
 const multiAnswers = ref<Record<number, string[]>>({})
 const remainingSeconds = ref(0)
 const resultData = ref<any>(null)
+const tabSwitchCount = ref(0)
 let countdownTimer: ReturnType<typeof setInterval>
+let visibilityHandler: (() => void) | null = null
 
 const pendingExams = ref<any[]>([])
 const doneExams = ref<any[]>([])
@@ -136,6 +172,49 @@ function formatTime(t: string) { return t ? new Date(t).toLocaleString('zh-CN') 
 function formatCountdown(s: number) {
   const m = Math.floor(s / 60); const sec = s % 60
   return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`
+}
+
+/** 解析 AI 评分详情 JSON */
+const aiScoringDetails = computed(() => {
+  try {
+    const raw = resultData.value?.aiReason
+    if (!raw) return []
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+})
+
+/** 根据分数返回 el-tag type */
+function scoreTagType(score: number) {
+  if (score == null) return 'info'
+  if (score >= 1) return 'success'
+  if (score > 0) return 'warning'
+  return 'danger'
+}
+
+/** 处理切屏检测 */
+function handleVisibilityChange() {
+  if (document.hidden) {
+    tabSwitchCount.value++
+    if (tabSwitchCount.value > 5) {
+      ElNotification({
+        title: '考试已终止',
+        message: `你已离开考试页面 ${tabSwitchCount.value} 次，系统自动交卷。`,
+        type: 'error',
+        duration: 5000,
+      })
+      submitExam()
+    } else if (tabSwitchCount.value > 3) {
+      ElNotification({
+        title: '切屏警告',
+        message: `系统检测到你已离开考试页面 ${tabSwitchCount.value} 次，请勿切屏，否则将自动交卷！`,
+        type: 'warning',
+        duration: 4000,
+      })
+    }
+  }
 }
 
 async function fetchExams() {
@@ -156,17 +235,32 @@ async function startExam(e: any) {
     multiAnswers.value = {}
     remainingSeconds.value = (e.durationMinutes || 120) * 60
     examState.value = 'answering'
+    tabSwitchCount.value = 0
+
+    // 启动切屏监听
+    visibilityHandler = () => handleVisibilityChange()
+    document.addEventListener('visibilitychange', visibilityHandler)
+
+    // 启动倒计时
     countdownTimer = setInterval(() => {
       remainingSeconds.value--
-      if (remainingSeconds.value <= 0) { submitExam() }
+      if (remainingSeconds.value <= 0) {
+        submitExam()
+      }
     }, 1000)
   } catch (err: any) {
     ElMessage.error(err?.message || '开始考试失败')
   }
 }
 
+/** 统一交卷方法：手动交卷、超时自动交卷、切屏强制交卷均走此方法 */
 async function submitExam() {
+  // 清理计时器与监听器
   clearInterval(countdownTimer)
+  if (visibilityHandler) {
+    document.removeEventListener('visibilitychange', visibilityHandler)
+    visibilityHandler = null
+  }
   try {
     // 合并单选/判断 + 多选答案
     const answerList = questions.value.map(q => ({
@@ -193,13 +287,20 @@ async function viewResult(e: any) {
 }
 
 onMounted(fetchExams)
-onUnmounted(() => clearInterval(countdownTimer))
+
+/** 组件卸载时清理所有资源 */
+onUnmounted(() => {
+  clearInterval(countdownTimer)
+  if (visibilityHandler) {
+    document.removeEventListener('visibilitychange', visibilityHandler)
+    visibilityHandler = null
+  }
+})
 </script>
 
 <style lang="scss" scoped>
 .page-title { font-size: 20px; font-weight: 700; margin: 0; color: var(--color-text); }
 .page-subtitle { font-size: 13px; color: var(--color-text-muted); margin: 4px 0 16px; }
-.empty-hint { text-align: center; color: var(--color-text-muted); padding: 60px 0; }
 
 .exam-header { display: flex; justify-content: space-between; align-items: center; }
 .exam-name { font-size: 16px; font-weight: 600; margin: 0; color: var(--color-text); }
@@ -233,5 +334,71 @@ onUnmounted(() => clearInterval(countdownTimer))
 .ai-feedback { text-align: left; background: rgba(139,92,246,0.05); padding: 16px; border-radius: 10px; margin: 16px 0;
   h4 { margin: 0 0 8px; font-size: 14px; }
   pre { margin: 0; font-size: 12px; color: var(--color-text-secondary); white-space: pre-wrap; }
+}
+
+/* AI 评分逐题详情 */
+.ai-scoring-section {
+  text-align: left;
+  background: rgba(64, 158, 255, 0.04);
+  border: 1px solid rgba(64, 158, 255, 0.15);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+}
+.ai-scoring-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 16px;
+}
+.ai-badge {
+  font-weight: 600;
+}
+.ai-score-item {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(64, 158, 255, 0.08);
+  &:last-child { border-bottom: none; }
+}
+.ai-score-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.ai-q-label {
+  color: var(--color-text);
+  font-weight: 500;
+}
+.ai-feedback-text {
+  color: var(--color-text-secondary);
+}
+.ai-reason-collapse {
+  margin-top: 6px;
+  :deep(.el-collapse-item__header) {
+    font-size: 12px;
+    color: var(--color-brand-light);
+    height: 32px;
+    line-height: 32px;
+    border: none;
+    background: transparent;
+  }
+  :deep(.el-collapse-item__wrap) {
+    background: transparent;
+    border: none;
+  }
+  :deep(.el-collapse-item__content) {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    padding-bottom: 4px;
+  }
+}
+.ai-reason-text {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
 }
 </style>

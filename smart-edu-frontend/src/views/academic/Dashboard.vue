@@ -1,7 +1,6 @@
 <template>
   <div class="page-card">
-    <h2 class="page-title">教务工作台</h2>
-    <p class="page-subtitle">欢迎，{{ userStore.userInfo?.realName || '教务老师' }}</p>
+    <PageHeader title="教务工作台" :subtitle="`欢迎，${userStore.userInfo?.realName || '教务老师'}`" />
 
     <div class="stats-row">
       <StatCard icon="Checked" label="待审课程" :value="stats.pendingCourses" color="orange" />
@@ -28,6 +27,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Checked, Clock, UserFilled, Reading } from '@element-plus/icons-vue'
+import PageHeader from '@/components/PageHeader.vue'
 import GlassCard from '@/components/GlassCard.vue'
 import StatCard from '@/components/StatCard.vue'
 import { useUserStore } from '@/stores/user'
@@ -37,8 +37,6 @@ const stats = ref({ pendingCourses: 2, activeRounds: 1, enrollCount: 6, totalOff
 </script>
 
 <style lang="scss" scoped>
-.page-title { font-size: 20px; font-weight: 700; margin: 0; color: var(--color-text); }
-.page-subtitle { font-size: 13px; color: var(--color-text-muted); margin: 4px 0 20px; }
 .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
 .quick-actions { display: flex; gap: 16px; }
 .quick-item { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px 24px; border-radius: 12px; background: rgba(139,92,246,0.04); cursor: pointer; font-size: 13px; color: var(--color-text-secondary); }

@@ -8,7 +8,7 @@
     </div>
 
     <!-- 玻璃态侧边栏 -->
-    <aside class="sidebar-glass">
+    <aside class="sidebar-glass" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="logo-area">
         <div class="logo-icon">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
@@ -19,6 +19,7 @@
           </svg>
         </div>
         <span class="logo-text">智教通</span>
+        <el-button class="sidebar-close-btn" :icon="Close" circle size="small" text @click="sidebarOpen = false" />
       </div>
 
       <nav class="sidebar-nav">
@@ -59,9 +60,14 @@
       </div>
     </aside>
 
+    <!-- 侧边栏遮罩（移动端） -->
+    <div class="sidebar-overlay" :class="{ 'sidebar-overlay--visible': sidebarOpen }" @click="sidebarOpen = false"></div>
+
     <!-- 主内容 -->
     <main class="main-area">
       <header class="app-header glass">
+        <!-- 移动端汉堡菜单 -->
+        <el-button class="sidebar-hamburger" :icon="Expand" circle size="small" text @click="sidebarOpen = !sidebarOpen" />
         <el-breadcrumb separator="·">
           <el-breadcrumb-item>
             <span style="color: var(--color-text-secondary);">{{ roleText }}工作台</span>
@@ -90,7 +96,7 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   Bell, SwitchButton, Reading, Calendar, List, DataLine, Notebook,
   UserFilled, Setting, Monitor, Sunny, Moon, Clock, View, Star,
-  Document, Upload, Checked, Collection, Timer
+  Document, Upload, Checked, Collection, Timer, Expand, Close
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 
@@ -98,6 +104,7 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const isDark = ref(false)
+const sidebarOpen = ref(false)
 
 const activeMenu = computed(() => route.path)
 
@@ -279,6 +286,11 @@ onUnmounted(() => clearInterval(timer))
     background-clip: text;
     letter-spacing: 0;
   }
+  .sidebar-close-btn {
+    display: none;
+    margin-left: auto;
+    color: rgba(255,255,255,0.5);
+  }
 }
 
 // 菜单导航
@@ -399,12 +411,19 @@ onUnmounted(() => clearInterval(timer))
   height: 64px;
   display: flex;
   align-items: center;
+  gap: 12px;
   padding: 0 28px;
   position: sticky;
   top: 0;
   z-index: 50;
   background: rgba(255, 255, 255, 0.72) !important;
   border-bottom: 1px solid rgba(79, 70, 229, 0.08);
+
+  .sidebar-hamburger {
+    display: none;
+    color: var(--color-text-secondary);
+    margin-right: 4px;
+  }
 
   html.dark & {
     background: rgba(11, 16, 32, 0.72) !important;
@@ -425,6 +444,13 @@ onUnmounted(() => clearInterval(timer))
   padding: 24px 28px;
   flex: 1;
   position: relative;
+}
+
+// 移动端：侧边栏内关闭按钮可见
+@media (max-width: 768px) {
+  .sidebar-close-btn {
+    display: flex !important;
+  }
 }
 </style>
 

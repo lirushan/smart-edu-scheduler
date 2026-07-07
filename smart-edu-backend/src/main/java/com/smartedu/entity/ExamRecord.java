@@ -23,7 +23,9 @@ public class ExamRecord {
     private String answers;           // JSON string
     private BigDecimal objectiveScore;
     private BigDecimal totalScore;
-    private String aiFeedback;        // JSON string
+    private String aiFeedback;        // JSON string: {"summary":"...", "details":[...]}
+    @TableField(exist = false)
+    private String aiReason;          // JSON string: per-question scoring details (not persisted, extracted from aiFeedback)
     private Integer status;           // 0=未开始 1=进行中 2=已交卷
 
     @TableLogic
