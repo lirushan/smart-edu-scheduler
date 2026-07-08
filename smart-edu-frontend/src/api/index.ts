@@ -156,6 +156,7 @@ export const academicTrainingPlanApi = {
 
 // ===== 教务学生导入 =====
 export const academicStudentApi = {
+  list: (params?: Record<string, any>) => http.get('/academic/students', { params }),
   preview: (file: File) => {
     const formData = new FormData()
     formData.append('file', file)

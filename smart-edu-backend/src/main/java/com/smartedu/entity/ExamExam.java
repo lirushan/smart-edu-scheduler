@@ -34,4 +34,13 @@ public class ExamExam {
 
     @TableField(exist = false)
     private String courseName;
+
+    @TableField(exist = false)
+    private Long recordId;
+
+    @TableField(exist = false)
+    private Integer recordStatus; // 0=未开始 1=进行中 2=已交卷
+
+    @TableField(exist = false)
+    private java.math.BigDecimal finalScore;
 }

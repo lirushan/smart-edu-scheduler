@@ -70,9 +70,51 @@
           </el-breadcrumb-item>
         </el-breadcrumb>
         <div class="header-actions">
-          <el-badge :value="3" :max="99" class="notification-badge">
-            <el-icon :size="20" class="header-icon"><Bell /></el-icon>
-          </el-badge>
+          <el-popover
+            trigger="click"
+            placement="bottom-end"
+            width="380"
+            popper-class="notification-popover"
+            :teleported="false"
+          >
+            <template #reference>
+              <button class="notification-trigger" aria-label="打开通知中心">
+                <el-badge :value="unreadCount" :max="99" :hidden="unreadCount === 0" class="notification-badge">
+                  <el-icon :size="20" class="header-icon"><Bell /></el-icon>
+                </el-badge>
+              </button>
+            </template>
+            <div class="notification-panel">
+              <div class="notification-head">
+                <div>
+                  <div class="notification-title">通知中心</div>
+                  <div class="notification-subtitle">{{ unreadCount > 0 ? `${unreadCount} 条未读` : '暂无未读通知' }}</div>
+                </div>
+                <el-button size="small" text :disabled="unreadCount === 0" @click="markAllNotificationsRead">
+                  全部已读
+                </el-button>
+              </div>
+              <div class="notification-list">
+                <button
+                  v-for="item in notifications"
+                  :key="item.id"
+                  class="notification-item"
+                  :class="{ unread: !isNotificationRead(item.id) }"
+                  @click="openNotification(item)"
+                >
+                  <span class="notification-dot"></span>
+                  <span class="notification-content">
+                    <span class="notification-name">{{ item.title }}</span>
+                    <span class="notification-message">{{ item.content }}</span>
+                    <span class="notification-meta">{{ item.time }}</span>
+                  </span>
+                </button>
+              </div>
+              <div class="notification-foot">
+                当前为前端提醒面板，后续接入站内信后会同步真实已读状态。
+              </div>
+            </div>
+          </el-popover>
           <span class="time-text">{{ currentTime }}</span>
         </div>
       </header>
@@ -120,6 +162,14 @@ type MenuTreeNode = {
   icon?: string
   menuType?: string
   children?: MenuTreeNode[]
+}
+
+type NotificationItem = {
+  id: string
+  title: string
+  content: string
+  time: string
+  path?: string
 }
 
 const iconMap: Record<string, any> = {
@@ -233,13 +283,65 @@ function isActive(path: string) {
 }
 
 const currentTime = ref('')
+const readNotificationIds = ref<string[]>([])
 let timer: ReturnType<typeof setInterval>
+
+const notifications = computed<NotificationItem[]>(() => {
+  const role = userStore.role
+  const common: NotificationItem[] = [
+    {
+      id: 'system-health',
+      title: '系统提醒',
+      content: '服务运行正常，今日教学业务可继续办理。',
+      time: '刚刚',
+      path: getRoleHomePath(role),
+    },
+  ]
+
+  const roleNotifications: Record<string, NotificationItem[]> = {
+    student: [
+      { id: 'student-round', title: '选课提醒', content: '当前选课轮次开放中，请及时确认已选课程。', time: '10 分钟前', path: '/courses' },
+      { id: 'student-exam', title: '考试通知', content: '考试中心已有成绩记录可查看。', time: '今天', path: '/exams' },
+    ],
+    teacher: [
+      { id: 'teacher-score', title: '成绩录入', content: '请关注待录入或待提交的课程成绩。', time: '今天', path: '/teacher/scores' },
+      { id: 'teacher-question', title: '题库提醒', content: '题目维护后可等待题库管理员审核。', time: '今天', path: '/teacher/questions' },
+    ],
+    academic: [
+      { id: 'academic-round', title: '选课监控', content: '建议检查高热度课程容量与学生报名情况。', time: '5 分钟前', path: '/academic/enroll-monitor' },
+      { id: 'academic-import', title: '新生导入', content: '导入后可在学生档案列表确认入库结果。', time: '今天', path: '/academic/new-student' },
+      { id: 'academic-schedule', title: '排课提醒', content: '排课管理目前仍需补充编辑和冲突检查能力。', time: '今天', path: '/academic/schedules' },
+    ],
+    admin: [
+      { id: 'admin-role', title: '权限管理', content: '角色菜单变更后建议补充审计记录。', time: '今天', path: '/admin/roles' },
+      { id: 'admin-approval', title: '课程审核', content: '课程审核列表可处理教师开课申请。', time: '今天', path: '/approvals' },
+    ],
+    qb_admin: [
+      { id: 'qb-audit', title: '题库审核', content: '请检查待审核题目并给出通过或驳回意见。', time: '今天', path: '/qb-admin/audit' },
+    ],
+  }
+
+  return [...(roleNotifications[role] || []), ...common]
+})
+
+const unreadCount = computed(() => notifications.value.filter((item) => !isNotificationRead(item.id)).length)
 
 function updateTime() {
   const now = new Date()
   currentTime.value = now.toLocaleDateString('zh-CN', {
     year: 'numeric', month: 'long', day: 'numeric', weekday: 'long',
   }) + ' ' + now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+}
+
+function getRoleHomePath(role: string) {
+  const map: Record<string, string> = {
+    student: '/dashboard',
+    teacher: '/teacher',
+    academic: '/academic',
+    admin: '/admin',
+    qb_admin: '/qb-admin',
+  }
+  return map[role] || '/dashboard'
 }
 
 function toggleDark() {
@@ -251,6 +353,50 @@ function toggleDark() {
 async function handleLogout() {
   await userStore.logout()
   router.push('/login')
+}
+
+function getNotificationStorageKey() {
+  const username = userStore.userInfo?.username || userStore.role || 'guest'
+  return `smart-edu-read-notifications:${username}`
+}
+
+function loadReadNotifications() {
+  try {
+    const saved = localStorage.getItem(getNotificationStorageKey())
+    readNotificationIds.value = saved ? JSON.parse(saved) : []
+  } catch {
+    readNotificationIds.value = []
+  }
+}
+
+function saveReadNotifications() {
+  localStorage.setItem(getNotificationStorageKey(), JSON.stringify(readNotificationIds.value))
+}
+
+function isNotificationRead(id: string) {
+  return readNotificationIds.value.includes(id)
+}
+
+function markNotificationRead(id: string) {
+  if (!readNotificationIds.value.includes(id)) {
+    readNotificationIds.value = [...readNotificationIds.value, id]
+    saveReadNotifications()
+  }
+}
+
+function markAllNotificationsRead() {
+  readNotificationIds.value = Array.from(new Set([
+    ...readNotificationIds.value,
+    ...notifications.value.map((item) => item.id),
+  ]))
+  saveReadNotifications()
+}
+
+function openNotification(item: NotificationItem) {
+  markNotificationRead(item.id)
+  if (item.path && route.path !== item.path) {
+    router.push(item.path)
+  }
 }
 
 async function fetchMenus() {
@@ -268,6 +414,7 @@ onMounted(async () => {
   isDark.value = savedTheme === 'dark'
   document.documentElement.classList.toggle('dark', isDark.value)
   document.documentElement.classList.toggle('light', !isDark.value)
+  loadReadNotifications()
   await fetchMenus()
 })
 
@@ -468,8 +615,140 @@ onUnmounted(() => clearInterval(timer))
     align-items: center;
     gap: 18px;
   }
-  .header-icon { color: var(--color-text-secondary); cursor: pointer; }
+  .header-icon { color: var(--color-text-secondary); }
+  .notification-trigger {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.66);
+    cursor: pointer;
+    transition: all 0.18s ease;
+
+    &:hover {
+      border-color: rgba(79, 70, 229, 0.28);
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 10px 24px rgba(79, 70, 229, 0.12);
+
+      .header-icon {
+        color: #4f46e5;
+      }
+    }
+  }
   .time-text { font-size: 12px; color: var(--color-text-muted); }
+}
+
+.notification-panel {
+  padding: 4px;
+}
+
+.notification-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 4px 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.notification-title {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.notification-subtitle {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.notification-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 10px 0;
+}
+
+.notification-item {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 8px 1fr;
+  gap: 10px;
+  padding: 11px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.18s ease;
+
+  &:hover {
+    border-color: rgba(79, 70, 229, 0.14);
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.07), rgba(6, 182, 212, 0.05));
+  }
+
+  &.unread {
+    background: rgba(79, 70, 229, 0.05);
+
+    .notification-dot {
+      background: #4f46e5;
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+    }
+
+    .notification-name {
+      color: #1e1b4b;
+    }
+  }
+}
+
+.notification-dot {
+  width: 7px;
+  height: 7px;
+  margin-top: 7px;
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.notification-content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.notification-name {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.notification-message {
+  font-size: 12px;
+  line-height: 18px;
+  color: #64748b;
+}
+
+.notification-meta {
+  font-size: 11px;
+  line-height: 16px;
+  color: #94a3b8;
+}
+
+.notification-foot {
+  margin-top: 2px;
+  padding: 10px 4px 2px;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+  font-size: 11px;
+  line-height: 18px;
+  color: #94a3b8;
 }
 
 .page-content {
@@ -485,5 +764,3 @@ onUnmounted(() => clearInterval(timer))
   }
 }
 </style>
-
-

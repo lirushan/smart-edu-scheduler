@@ -1,6 +1,8 @@
 package com.smartedu.controller;
 
+import com.smartedu.common.PageResult;
 import com.smartedu.common.Result;
+import com.smartedu.entity.SysUser;
 import com.smartedu.service.AcademicStudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +22,19 @@ import java.util.Map;
 public class AcademicStudentController {
 
     private final AcademicStudentService academicStudentService;
+
+    /**
+     * 学生档案列表
+     */
+    @GetMapping
+    public Result<PageResult<SysUser>> listStudents(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String major,
+            @RequestParam(required = false) String grade) {
+        return Result.ok(academicStudentService.listStudents(page, size, keyword, major, grade));
+    }
 
     /**
      * 预览上传文件

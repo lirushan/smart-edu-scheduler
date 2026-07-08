@@ -166,8 +166,9 @@ function parseOptions(opts: string) {
 function qTypeLabel(t: number) { return ['','单选题','多选题','判断题','填空题'][t] || '' }
 function examStatusType(e: any) { return e.status === 2 ? 'info' : e.status === 1 ? 'success' : 'warning' }
 function examStatusText(e: any) { return e.status === 2 ? '已结束' : e.status === 1 ? '进行中' : '未开始' }
-function canStart(e: any) { return e.status !== 2 }
-function canViewResult(_e: any) { return false }
+function isSubmitted(e: any) { return e.recordStatus === 2 || e.record_status === 2 }
+function canStart(e: any) { return e.status !== 2 && !isSubmitted(e) }
+function canViewResult(e: any) { return isSubmitted(e) }
 function formatTime(t: string) { return t ? new Date(t).toLocaleString('zh-CN') : '-' }
 function formatCountdown(s: number) {
   const m = Math.floor(s / 60); const sec = s % 60
@@ -220,8 +221,8 @@ function handleVisibilityChange() {
 async function fetchExams() {
   try {
     exams.value = await examApi.list()
-    pendingExams.value = exams.value.filter(e => e.status !== 2)
-    doneExams.value = exams.value.filter(e => e.status === 2)
+    pendingExams.value = exams.value.filter(e => !isSubmitted(e) && e.status !== 2)
+    doneExams.value = exams.value.filter(e => isSubmitted(e) || e.status === 2)
   } catch { exams.value = [] }
 }
 

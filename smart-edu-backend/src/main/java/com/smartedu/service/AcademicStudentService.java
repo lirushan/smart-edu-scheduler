@@ -1,7 +1,9 @@
 package com.smartedu.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.smartedu.common.BizError;
+import com.smartedu.common.PageResult;
 import com.smartedu.common.exception.BusinessException;
 import com.smartedu.entity.SysUser;
 import com.smartedu.mapper.SysUserMapper;
@@ -10,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
@@ -28,6 +31,32 @@ public class AcademicStudentService {
 
     private final SysUserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+
+    /**
+     * 查询学生档案，承接新生导入后的数据核对。
+     */
+    public PageResult<SysUser> listStudents(Integer page, Integer size, String keyword, String major, String grade) {
+        LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SysUser::getUserType, 1);
+        if (StringUtils.hasText(keyword)) {
+            wrapper.and(w -> w.like(SysUser::getUsername, keyword)
+                    .or().like(SysUser::getRealName, keyword)
+                    .or().like(SysUser::getDepartment, keyword)
+                    .or().like(SysUser::getMajor, keyword));
+        }
+        if (StringUtils.hasText(major)) {
+            wrapper.like(SysUser::getMajor, major);
+        }
+        if (StringUtils.hasText(grade)) {
+            wrapper.eq(SysUser::getGrade, grade);
+        }
+        wrapper.orderByDesc(SysUser::getCreateTime);
+
+        Page<SysUser> pageResult = userMapper.selectPage(Page.of(page, size), wrapper);
+        pageResult.getRecords().forEach(user -> user.setPassword(null));
+        return PageResult.of(pageResult.getTotal(), pageResult.getCurrent(),
+                pageResult.getSize(), pageResult.getRecords());
+    }
 
     /**
      * 预览上传的CSV/Excel文件，返回待导入学生列表
